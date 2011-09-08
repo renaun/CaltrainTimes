@@ -7,6 +7,10 @@ The Flash Builder project files are not included because of
 certain references it makes to my local machine. You will
 want to create a Flex Mobile project with Flash Builder 4.5.1.
 
+License is a Creative Commons (see LICENSE file for details):
+Attribution-NonCommercial-ShareAlike 3.0 United States
+
+------
 Note: I can't include the fonts with this project. But
 I did provide a fonts.swc that provide most of the fonts
 for you try at least try and compile the project.
@@ -16,3 +20,4 @@ the /src/assets/fonts/ folder.
 
 If you do not, then change style.css to style_fonts_in_swc.css and
 uncomment the Font code in CaltrainTimesScript.as file.
+------
