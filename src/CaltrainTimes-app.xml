@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<application xmlns="http://ns.adobe.com/air/application/2.6">
+
+	<id>com.renaun.CaltrainTimes</id>
+	<filename>CaltrainTimes</filename>
+	<name>Caltrain Times</name>
+	<versionNumber>1.0.33</versionNumber>
+	<description>Caltrain Times provides train times between the Caltrain stations.</description>
+	<initialWindow>
+		<content>[This value will be overwritten by Flash Builder in the output app.xml]</content>
+		<autoOrients>true</autoOrients>
+        <fullScreen>false</fullScreen>
+        <visible>true</visible>
+        <softKeyboardBehavior>none</softKeyboardBehavior>
+    </initialWindow>
+    
+	<icon>
+		<image29x29>/assets/icons/icon29.png</image29x29>
+		<image36x36>/assets/icons/icon36.png</image36x36>
+		<image48x48>/assets/icons/icon48.png</image48x48>
+		<image57x57>/assets/icons/icon57.png</image57x57>
+		<image72x72>/assets/icons/icon72.png</image72x72>
+		<image114x114>/assets/icons/icon114.png</image114x114>
+		<image512x512>/assets/icons/icon512.png</image512x512>
+	</icon>
+
+	<android>
+        <manifestAdditions><![CDATA[
+			<manifest android:installLocation="auto">
+			    <uses-permission android:name="android.permission.INTERNET"/>
+			    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+			    <uses-feature android:required="true" android:name="android.hardware.touchscreen.multitouch"/>
+				<application android:enabled="true">
+					<activity android:excludeFromRecents="false">
+						<intent-filter>
+							<action android:name="android.intent.action.MAIN"/>
+							<category android:name="android.intent.category.LAUNCHER"/>
+						</intent-filter>
+					</activity>
+				</application>
+			</manifest>
+		]]></manifestAdditions>
+    </android>
+    <iPhone>
+        <InfoAdditions><![CDATA[
+			<key>UIDeviceFamily</key>
+			<array>
+				<string>1</string>
+				<string>2</string>
+			</array>
+			<key>UIPrerenderedIcon</key>
+			<true/>
+            <key>UIStatusBarStyle</key>
+            <string>UIStatusBarStyleBlackOpaque</string>
+		]]></InfoAdditions>
+        <requestedDisplayResolution>high</requestedDisplayResolution>
+    </iPhone>
+	<!-- Specify Android specific tags that get passed to AndroidManifest.xml file. -->
+	<!--<android> 
+		<manifestAdditions>
+		<![CDATA[
+			<manifest android:installLocation="auto">
+				<uses-permission android:name="android.permission.INTERNET"/>
+				<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+				<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+				<uses-configuration android:reqFiveWayNav="true"/>
+				<supports-screens android:normalScreens="true"/>
+				<uses-feature android:required="true" android:name="android.hardware.touchscreen.multitouch"/>
+				<application android:enabled="true">
+					<activity android:excludeFromRecents="false">
+						<intent-filter>
+							<action android:name="android.intent.action.MAIN"/>
+							<category android:name="android.intent.category.LAUNCHER"/>
+						</intent-filter>
+					</activity>
+				</application>
+			</manifest>
+		]]>
+		</manifestAdditions> 
+	</android> -->
+	<!-- End of the schema for adding the android specific tags in AndroidManifest.xml file -->
+
+</application>

@@ -1,0 +1,18 @@
+Source code for the Caltrain Times application.
+
+More info about the application can be found here:
+http://renaun.com/blog/apps/caltraintimes/
+
+The Flash Builder project files are not included because of 
+certain references it makes to my local machine. You will
+want to create a Flex Mobile project with Flash Builder 4.5.1.
+
+Note: I can't include the fonts with this project. But
+I did provide a fonts.swc that provide most of the fonts
+for you try at least try and compile the project.
+
+If you have the fonts listed in style.css then just put them into
+the /src/assets/fonts/ folder.
+
+If you do not, then change style.css to style_fonts_in_swc.css and
+uncomment the Font code in CaltrainTimesScript.as file.

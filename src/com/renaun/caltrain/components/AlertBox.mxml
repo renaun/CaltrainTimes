@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark"
+					  width="100%" gap="0"
+					  y.alert="{alertY+1}"
+					  y.details="{detailsY}">
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayList;
+			[Bindable]
+			public var alertY:Number = 0;
+			[Bindable]
+			public var detailsY:Number = 0;
+			
+			[Bindable]
+			public var alertBoxHeight:Number = 0;
+			[Bindable]
+			public var isFading:Boolean = false;
+			
+			private var timer:Timer;
+			
+			public function setMessage(msg:String, fade:Boolean = false):void
+			{
+				lblMessage.text = msg;
+				currentState = "alert";
+				isFading = fade;
+				if (fade)
+				{
+					if (!timer)
+					{
+						timer = new Timer(3500, 1);
+						timer.addEventListener(TimerEvent.TIMER_COMPLETE, timerHandler);
+					}
+					timer.reset();
+					timer.start();
+				}
+			}
+			
+			public function setAlerts(alerts:Array):void
+			{
+				lstAlerts.dataProvider = new ArrayList(alerts);
+			}
+			
+			public function removeAlerts():void
+			{
+				currentState = "hidden";
+			}
+			
+			private function timerHandler(event:Event):void
+			{
+				currentState = "hidden";
+			}
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="hidden" />
+		<s:State name="alert" />
+		<s:State name="details" />
+	</s:states>
+
+	<s:transitions>
+		<s:Transition>
+			<s:Move target="{this}" duration="600" />
+		</s:Transition>	
+	</s:transitions>
+		
+	<s:SkinnableContainer id="grpHorz" styleName="blackBox" width="100%" height="{alertBoxHeight}">
+		<s:layout>
+			<s:HorizontalLayout id="lH" />
+		</s:layout>
+		<s:Label text="Alert:" styleName="alertHeader" />
+		<s:Label id="lblMessage" text="" styleName="alertText2" width="100%" />
+		
+		<s:Group id="OPHitArea" height="100%" width="{alertBoxHeight}"
+				 visible="{!isFading}"
+				 click="currentState = (currentState == 'alert') ? 'details' : 'alert'"
+				 >
+			<s:ToggleButton id="btnOpenClose" selected="{currentState == 'details'}" verticalCenter="{-btnOpenClose.height/8}" right="0"
+							skinClass="com.renaun.caltrain.skins.OpenCloseButtonSkin" />
+		</s:Group>
+	</s:SkinnableContainer>
+	
+	<s:List id="lstAlerts" width="100%" height="100%" contentBackgroundColor="0x2e2e2e" 
+			alternatingItemColors="{[0x4b4b4b,0x2e2e2e]}" itemRenderer="com.renaun.caltrain.renderers.AlertListItemRenderer"
+			styleName="alertText" />
+	
+</s:VGroup>

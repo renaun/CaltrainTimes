@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 doubleClickEnabled="true"
+		 creationComplete="setStationCircle()">
+	
+	<fx:Metadata>
+		[Event(name="edit", type="flash.events.DataEvent")]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[			
+			import com.renaun.caltrain.vo.StationVO;
+			
+			import mx.core.FlexGlobals;
+			
+			private var _prefix:String = "From:";
+				
+			[Bindable]
+			public function get prefix():String
+			{
+				return _prefix;
+			}
+
+			public function set prefix(value:String):void
+			{
+				_prefix = value;
+				if (value == "To:")
+					currentState = "disabled";
+				setStation(null);
+			}
+			
+			[Bindable]
+			private var stationName:String = " - Select Station -";
+			//" - Select Your Destination -";
+
+			public function setStation(station:StationVO):void
+			{
+				if (!station)
+					stationName = (prefix == "From:") ? " - Select Station -" : " - Select Station -";
+				else
+					stationName = station.name;
+			}
+			protected function setStationCircle():void
+			{
+				stationCircle.source = (prefix == "From:") ? FlexGlobals.topLevelApplication.circle2b : FlexGlobals.topLevelApplication.circle3b;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="defaultText" />
+		<s:State name="active" />
+		<s:State name="disabled" />
+	</s:states>
+	<s:layout>
+		<s:HorizontalLayout gap="0" />
+	</s:layout>
+	
+	<s:BitmapImage id="stationCircle"
+				   alpha.disabled="0.3"  />
+	
+	<s:Label styleName="text1" text="{prefix}"
+			 alpha.disabled="0.3"
+			 verticalAlign="middle" />
+	<s:Label styleName="text2" text="{stationName}" width="100%"
+			 alpha.disabled="0.3"
+			 verticalAlign="middle"/>
+	
+	<s:Group  visible="true" visible.active="true" visible.defaultText="false">
+		<s:BitmapImage verticalCenter="0">
+			<s:source>
+				<s:MultiDPIBitmapSource source160dpi="@Embed(source='/assets/dpi160/redbox_down.png')"
+										source240dpi="@Embed(source='/assets/dpi240/redbox_down.png')"
+										source320dpi="@Embed(source='/assets/dpi320/redbox_down.png')" />
+			</s:source>
+		</s:BitmapImage>
+		<s:Label verticalCenter="0" horizontalCenter="0" styleName="editText" text="EDIT" />
+	</s:Group>
+	
+</s:SkinnableContainer>

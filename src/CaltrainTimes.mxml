@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:components="com.renaun.caltrain.components.*" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   creationComplete="init()"
+			   applicationComplete="appReady()"
+			   preloader="com.renaun.caltrain.components.MultiDPISplashScreen"
+			   splashScreenScaleMode="none"
+			   splashScreenMinimumDisplayTime="1000"
+			   runtimeDPIProvider="com.renaun.mobile.dpi.CustomDPIProvider"
+			   backgroundColor="0xcccccc" >
+	
+	<fx:Style source="assets/styles.css" />
+	<fx:Script source="CaltrainTimesScript.as" />
+
+	<fx:Declarations>
+		<s:Power id="powerEasing"
+				 exponent="4"/>
+		
+		<s:DropShadowFilter id="subtleDropShadow" blurX="2" blurY="2" distance="2" alpha="0.8" />
+		
+		<s:MultiDPIBitmapSource id="bitmapResultsHDots"
+				source160dpi="{CaltrainTimes.ResultsHDotsDPI160}"
+				source240dpi="{CaltrainTimes.ResultsHDotsDPI240}"
+				source320dpi="{CaltrainTimes.ResultsHDotsDPI320}"/>	
+		
+		<s:MultiDPIBitmapSource id="circle1"
+				source160dpi="{CaltrainTimes.StationCircle1DPI160}"
+				source240dpi="{CaltrainTimes.StationCircle1DPI240}"
+				source320dpi="{CaltrainTimes.StationCircle1DPI320}"/>
+		
+		<s:MultiDPIBitmapSource id="circle2"
+				source160dpi="{CaltrainTimes.StationCircle2DPI160}"
+				source240dpi="{CaltrainTimes.StationCircle2DPI240}"
+				source320dpi="{CaltrainTimes.StationCircle2DPI320}"/>
+		
+		<s:MultiDPIBitmapSource id="circle3"
+				source160dpi="{CaltrainTimes.StationCircle3DPI160}"
+				source240dpi="{CaltrainTimes.StationCircle3DPI240}"
+				source320dpi="{CaltrainTimes.StationCircle3DPI320}"/>
+		<s:MultiDPIBitmapSource id="circle2b"
+				source160dpi="{CaltrainTimes.StationCircle2bDPI160}"
+				source240dpi="{CaltrainTimes.StationCircle2bDPI240}"
+				source320dpi="{CaltrainTimes.StationCircle2bDPI320}"/>
+		
+		<s:MultiDPIBitmapSource id="circle3b"
+				source160dpi="{CaltrainTimes.StationCircle3bDPI160}"
+				source240dpi="{CaltrainTimes.StationCircle3bDPI240}"
+				source320dpi="{CaltrainTimes.StationCircle3bDPI320}"/>
+		
+		<s:MultiDPIBitmapSource id="stationLine"
+				source160dpi="{CaltrainTimes.StationLineDPI160}"
+				source240dpi="{CaltrainTimes.StationLineDPI240}"
+				source320dpi="{CaltrainTimes.StationLineDPI320}"/>
+		
+		<s:MultiDPIBitmapSource id="blackbox"
+				source160dpi="{CaltrainTimes.BlackBoxDPI160}"
+				source240dpi="{CaltrainTimes.BlackBoxDPI320}"
+				source320dpi="{CaltrainTimes.BlackBoxDPI320}"/>
+		
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="default" />
+		<s:State name="stationsHidden" />
+		<s:State name="largeView" />
+	</s:states>
+	
+	<s:transitions>
+		<s:Transition autoReverse="true">
+			<s:Parallel>
+				<s:Move id="upDown" targets="{grpStations}" duration="400" />	
+				<s:Fade target="{grpStations}" duration="400" />
+			</s:Parallel>
+		</s:Transition>
+	</s:transitions>
+	
+	<s:BitmapImage id="imgBackground" width="100%" top="{grpFrom.y + grpFrom.height}" bottom="{grpTo.height}">
+		<s:source>
+			<s:MultiDPIBitmapSource 
+				source160dpi="@Embed(source='/assets/dpi160/bg.jpg',
+										scaleGridLeft='5', scaleGridTop='5',
+										scaleGridRight='230',scaleGridBottom='455')"
+				source240dpi="@Embed(source='/assets/dpi240/bg.jpg',
+										scaleGridLeft='8', scaleGridTop='8',
+										scaleGridRight='335',scaleGridBottom='682')"
+				source320dpi="@Embed(source='/assets/dpi320/bg.jpg',
+										scaleGridLeft='10', scaleGridTop='10',
+										scaleGridRight='469',scaleGridBottom='910')" />
+		</s:source>
+	</s:BitmapImage>
+	
+	<s:SkinnableContainer id="grpHeader" backgroundColor="0xffffff" width="100%" mouseChildren="false"
+						 click="grpInstructions.visible = !grpInstructions.visible">
+		<s:layout>
+			<s:HorizontalLayout id="grpHeaderLayout" gap="0" verticalAlign="middle" />
+		</s:layout>
+		<s:Label id="lblHeaderText" text="Caltrain" styleName="headerText" />
+		<s:Label id="lblHeaderText2" text=" Times" styleName="headerText2" width="100%" />
+	</s:SkinnableContainer>
+	
+	<!-- GPS Make Hit Area Bigger -->
+	<s:BitmapImage id="imgGPS" 
+					y="{(grpHeader.height-imgGPS.height)/2}"
+					right="{(grpHeader.height/3)}">
+		<s:source>
+			<s:MultiDPIBitmapSource source160dpi="@Embed(source='/assets/dpi160/gps.png')"
+									source240dpi="@Embed(source='/assets/dpi240/gps.png')"
+									source320dpi="@Embed(source='/assets/dpi320/gps.png')" />
+		</s:source>
+	</s:BitmapImage>
+	<s:BitmapImage id="imgGPS2" visible="false"
+				   y="{(grpHeader.height-imgGPS.height)/2}"
+				   right="{(grpHeader.height/3)}">
+		<s:source>
+			<s:MultiDPIBitmapSource source160dpi="@Embed(source='/assets/dpi160/gps2.png')"
+									source240dpi="@Embed(source='/assets/dpi240/gps2.png')"
+									source320dpi="@Embed(source='/assets/dpi320/gps2.png')" />
+		</s:source>
+	</s:BitmapImage>
+	<s:SkinnableContainer id="GPSHitArea" height="{grpHeader.height}" width="{grpHeader.height}" backgroundAlpha="0"
+						  click="grpInstructions.visible = false;findNearestStation()"
+						  right="{(grpHeader.height/3)-((grpHeader.height-imgGPS.height)/2)}" />
+	
+	<!-- Station Selector -->
+	<components:StationSelector id="grpStations" width="100%" x.stationsHidden="{-grpFrom.width}"
+								alpha.stationsHidden="0" alpha="1"  mouseEnabled="false" width.largeView="{largeViewWidth}"
+				top="{grpFrom.y + grpFrom.height}" bottom="{grpTo.height}"
+				stationSelect="stationSelected(event.station, event.direction)" /> 
+	
+	<components:TrainSchedule id="grpTrainSchedule" width="{grpStations.width}" mouseEnabled="false"							  
+				top="{grpFrom.y + grpFrom.height}" bottom="{grpFrom.height}"
+				width.largeView="{width - largeViewWidth}" x.largeView="{grpStations.width}" />
+	
+	<!-- Results -->
+	
+	<!-- BlackBoxed Sections (From, To, Alerts) -->
+	<components:StationBlackBox id="grpFrom" y="{grpHeader.height}" width="100%" styleName="blackBox"
+								prefix="From:" click="setSelector('from', true)" doubleClick="swapStations()"
+								/>
+	
+	<components:AlertBox id="grpAlerts" alertY="{grpTo.y-grpTo.height}" alertBoxHeight="{grpTo.height}"
+						 detailsY="{grpFrom.y + grpFrom.height}" y="{height}" height="{grpTrainSchedule.height}" />
+	
+	<components:StationBlackBox id="grpTo" bottom="0" width="100%" styleName="blackBox"
+						  prefix="To:" click="setSelector('to', true)" doubleClick="swapStations()"
+						  />
+	<components:InstructionView id="grpInstructions" top="{grpFrom.y}" bottom="0" visible="false" />
+	<!--<s:TextArea id="output" bottom="0" height="300" width="100%" editable="false" color="0x000000" />-->
+</s:Application>

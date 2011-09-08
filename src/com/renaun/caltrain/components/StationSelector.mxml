@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:components="com.renaun.components.*">
+	
+	<fx:Metadata>
+		
+		[Event(name="stationSelect", type="com.renaun.events.StationSelectEvent")]
+	</fx:Metadata>
+	
+	<!--
+	<s:Image id="imgStationHighlist" verticalCenter="0" width="100%"  visible="false">
+		<s:source>
+			<s:MultiDPIBitmapSource
+				source160dpi="{CaltrainTimes.SelectorHighlightDPI160}"
+				source240dpi="{CaltrainTimes.SelectorHighlightDPI240}"
+				source320dpi="{CaltrainTimes.SelectorHighlightDPI320}"/>
+		</s:source>
+	</s:Image>
+	
+	<s:Image id="imgPointer" verticalCenter="0" visible="false">
+		<s:source>
+			<s:MultiDPIBitmapSource
+				source160dpi="{CaltrainTimes.PointerDPI160}"
+				source240dpi="{CaltrainTimes.PointerDPI240}"
+				source320dpi="{CaltrainTimes.PointerDPI320}"/>
+		</s:source>
+	</s:Image>	
+	
+
+	<s:List id="lstStations" width="100%" height="100%" contentBackgroundAlpha="0.0"
+			dataProvider="{CaltrainTimes.stations}"
+			mouseMove="lstStations_mouseMoveHandler(event)"
+			useVirtualLayout="false"
+			itemRenderer="com.renaun.caltrain.renderers.StationRenderer">
+		<s:layout>
+			<s:VerticalLayout variableRowHeight="true" gap="0" />
+		</s:layout>
+	</s:List>
+	-->
+	
+	<components:SpinnerDataGroup id="lstStations" width="100%" height="100%"
+								 dataProvider="{CaltrainTimes.stations}"
+								 itemRenderer="com.renaun.caltrain.renderers.StationRendererAS" />
+
+</s:Group>

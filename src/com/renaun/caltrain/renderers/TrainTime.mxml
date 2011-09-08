@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				autoDrawBackground="false"
+				creationComplete="creationCompleteHandler()"
+					xmlns:s="library://ns.adobe.com/flex/spark">
+	<fx:Script>
+		<![CDATA[
+			import com.renaun.caltrain.vo.TimesVO;
+			
+			import mx.core.DPIClassification;
+			import mx.core.FlexGlobals;
+			
+			override public function set data(value:Object):void
+			{
+				super.data = value;
+				if (!value)
+					return
+				
+				var item:TimesVO = value as TimesVO;
+				
+				lblFrom.text = item.departureTime;
+				lblTo.text = item.arrivalTime;
+				lblDuration.text = item.duration;
+				lblTrain.text = item.trainNumber;
+				lblFare.text = item.fare;
+				
+				
+				var c:uint = 0;
+				if (item.routeID == 2)
+					c = 0xf0ff00;
+				else if (item.routeID == 4)
+					c = 0x00ff60;
+				else if (item.routeID == 1)
+					c = 0xA10C11;
+				//var c:uint = (itemIndex % 3) == 0 ? 0xFEF0B5 : ((itemIndex % 3) == 1 ? 0 : 0xE31837);
+				bgColor.color = c;
+				if (c == 0)
+					bgColor.alpha = 0;
+				else
+					bgColor.alpha = 0.2;
+			}
+			
+			protected function creationCompleteHandler():void
+			{
+				switch (FlexGlobals.topLevelApplication.runtimeDPI)
+				{
+					case DPIClassification.DPI_160:
+						minHeight = 50;
+						break;
+					case DPIClassification.DPI_240:
+						minHeight = 75;
+						break;
+					case DPIClassification.DPI_320:
+						minHeight = 100;
+						break;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:DropShadowFilter id="headerDropShadow" blurX="2" blurY="2" distance="2" alpha="0.5" angle="132" />
+	</fx:Declarations>
+
+	<!-- grey 777777
+	green 00ff60
+	yellow f0ff00
+	red 	0xA10C11 -->
+	<s:Rect id="bg" width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor id="bgColor" alpha="0.15" color="0x000000" />
+		</s:fill>
+	</s:Rect>
+	<s:HGroup width="90%" horizontalCenter="0"  verticalCenter="0">
+		<s:Label id="lblFrom" styleName="results" textAlign="center" width="23%" filters="{headerDropShadow}" />
+		<s:Label id="lblTo" styleName="results" textAlign="center" width="23%" filters="{headerDropShadow}" />
+		<s:Label id="lblDuration" styleName="results" textAlign="center" width="24%" filters="{headerDropShadow}" />
+		<s:Label id="lblTrain" styleName="results" textAlign="center" width="11%" filters="{headerDropShadow}" />
+		<s:Label id="lblFare" styleName="results" textAlign="center" width="19%" filters="{headerDropShadow}" />
+	</s:HGroup>
+	
+	<s:Group id="maskRect2" width="80%" height="10" bottom="-1" cacheAsBitmap="true"
+			 horizontalCenter="0">
+		<s:Rect width="100%" height="10">
+			<s:fill>
+				<s:LinearGradient>
+					<s:GradientEntry color="blue" alpha="0"/>
+					<s:GradientEntry color="black" ratio="0.1"  />
+					<s:GradientEntry color="black" ratio="0.9"  />
+					<s:GradientEntry color="red" alpha="0"/>
+				</s:LinearGradient>
+			</s:fill>
+		</s:Rect>
+	</s:Group>
+	<s:Image id="dots2" width="80%" fillMode="repeat" bottom="-1" mask="{maskRect2}" cacheAsBitmap="true"
+			 horizontalCenter="0">
+		<s:source>
+			<s:MultiDPIBitmapSource
+				source160dpi="{CaltrainTimes.ResultsHDotsDPI160}"
+				source240dpi="{CaltrainTimes.ResultsHDotsDPI240}"
+				source320dpi="{CaltrainTimes.ResultsHDotsDPI320}"/>
+		</s:source>
+	</s:Image>
+</s:ItemRenderer>

@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark"
+					initialize="itemrenderer1_creationCompleteHandler(event)"
+					autoDrawBackground="false" width="100%">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.renaun.caltrain.components.StationSelector;
+			import com.renaun.caltrain.vo.StationVO;
+			
+			import mx.core.DPIClassification;
+			import mx.core.FlexGlobals;
+			import mx.core.RuntimeDPIProvider;
+			import mx.events.FlexEvent;
+			
+			import spark.components.DataGroup;
+			import spark.components.List;
+			import spark.filters.DropShadowFilter;
+			
+			public var direction:int = 0;
+			
+			private var _showTimes:Boolean = false;
+			public function get showTimes():Boolean
+			{
+				return _showTimes;
+			}
+			
+			public function set showTimes(value:Boolean):void
+			{
+				_showTimes = value;
+				if (value)
+				{
+					// get Latest times
+					var c:uint = 0;
+					var d:Date = new Date();
+					var cTime:int = (d.getHours() * 60) + d.getMinutes();
+					var stopID:int = (data as StationVO).stopID;
+					var serviceID:int = CaltrainTimes.todaysServiceID;
+					var sql:String = "select stop_times.arrival_time, trips.route_id from stop_times, trips where stop_id="+stopID+" AND stop_times.trip_id=trips.trip_id AND trips.service_id="+serviceID+" AND arrival_time>"+cTime+" AND trips.direction=0 order by arrival_time limit 1";
+					var results:Array = FlexGlobals.topLevelApplication.processSQL(sql);
+					var routeID:int = 0;
+					if (results.length > 0)
+					{
+						routeID = results[0]["route_id"];
+						resultsNorth.text = "Next Northbound " + CaltrainTimes.formatTime(results[0]["arrival_time"]);
+						if (routeID == 2)
+							c = 0xf0ff00;
+						else if (routeID == 4)
+							c = 0x00ff60;
+						else if (routeID == 1)
+							c = 0xA10C11;
+						else
+							c = 0x777777;
+						resultsNorth.setStyle("backgroundColor", c);
+					}
+					resultsNorth.visible = (results.length > 0 && itemIndex > 1);
+					
+					sql = "select stop_times.arrival_time, trips.route_id from stop_times, trips where stop_id="+stopID+" AND stop_times.trip_id=trips.trip_id AND trips.service_id="+serviceID+" AND arrival_time>"+cTime+" AND trips.direction=1 order by arrival_time limit 1";
+					results = FlexGlobals.topLevelApplication.processSQL(sql);
+					if (results.length > 0)
+					{
+						routeID = results[0]["route_id"];
+						resultsSouth.text = "Next Southbound " + CaltrainTimes.formatTime(results[0]["arrival_time"]);
+						if (routeID == 2)
+							c = 0xf0ff00;
+						else if (routeID == 4)
+							c = 0x00ff60;
+						else if (routeID == 1)
+							c = 0xA10C11;
+						else
+							c = 0x777777;
+						resultsSouth.setStyle("backgroundColor", c);
+					}
+					resultsSouth.visible = (results.length > 0 && itemIndex < (parent as DataGroup).dataProvider.length-2);
+					
+				}
+				if (value && quickTimes.alpha == 0.0 && selected) //selected && direction < 0 && !(FlexGlobals.topLevelApplication as CaltrainTimes).hasBothStations)
+				{
+					effectMove.alphaFrom = 0;
+					effectMove.alphaTo = 1;
+					effectMove.play();
+				}
+				else if (!value && quickTimes.alpha > 0.05)
+				{
+					effectMove.alphaFrom = 1;
+					effectMove.alphaTo = 0;
+					effectMove.play();
+				}
+			}
+			
+			private var _highlight:Boolean = false;
+			public function get highlight():Boolean
+			{
+				return _highlight;
+			}
+
+			public function set highlight(value:Boolean):void
+			{
+				//trace("highlight: " + value);
+				_highlight = value;
+				//lblStation.setStyle("styleName", (value || selected) ? "stationText2" : "stationText1");
+				//imgCircle.filters = (value && !selected) ? [glowFilter] : [];
+			}
+
+			override public function set data(value:Object):void
+			{
+				super.data = value;
+				if (value == null)
+					return;
+				
+				// Handle First and Last renderers
+				//trace("index: " + itemIndex);
+				if (itemIndex == 1)
+				{
+					imgLine.clearStyle("top");
+					imgLine.setStyle("bottom", 0);
+					imgLine.percentHeight = 50;
+				}
+				else if (itemIndex == (parent as DataGroup).dataProvider.length-2)
+				{
+					imgLine.clearStyle("bottom");
+					imgLine.setStyle("top", 0);
+					imgLine.percentHeight = 50;
+				}
+				else
+				{
+					imgLine.clearStyle("bottom");
+					imgLine.setStyle("top", 0);
+					imgLine.percentHeight = 100;
+				}
+			}
+			
+			override public function set selected(value:Boolean):void
+			{
+				//trace("selected: " + value);
+				super.selected = value;
+				
+				var lastHeight:int = this.height;
+				this.height = (!value) ? smallerHeight : largerHeight;
+				(parent as DataGroup).verticalScrollPosition -= (lastHeight-this.height)/2;
+				
+				// Check Direction to set Circles
+				imgCircle.source = (!value) ? circle1 : ((direction < 0) ? circle2 : circle3);
+				lblStation.setStyle("styleName", (!value) ? "stationText1" : "stationText2");
+				
+				//xLabel = ((!value) ? circle1Width/3 : 0);
+				xCircle = (!value) ? xCircle1 : xCircle2;
+				xLabel = (!value) ? xLabelStart : xLabelStart + (xCircle1-xCircle2);
+				if (value)
+					imgCircle.filters = [];
+			}
+			
+			
+			public var smallerHeight:int = 120;
+			public var largerHeight:int = 160;
+			private var circle1Width:int = 52;
+			private var circle2Width:int = 90;
+			[Bindable]
+			private var xLine:int = 60;
+			[Bindable]
+			private var xCircle:int = 60;
+			private var xCircle1:int = 60;
+			private var xCircle2:int = 60;
+			private var xLabelStart:int = 100;
+			[Bindable]
+			private var xLabel:int = 100;
+			
+			
+			protected function itemrenderer1_creationCompleteHandler(event:FlexEvent):void
+			{
+				switch (FlexGlobals.topLevelApplication.runtimeDPI)
+				{
+					case DPIClassification.DPI_160:
+						smallerHeight = 31+28;
+						largerHeight = 78;
+						xLine = 50;
+						xLabel = 76;
+						circle1Width = 31;
+						circle2Width = 50;
+						xCircle = (xLine + 2) - circle1Width/2;
+						xCircle1 = (xLine + 2) - circle1Width/2;
+						xCircle2 = (xLine + 2) - circle2Width/2;
+						lblStation.setStyle("verticalCenter", 2);
+						SubtleDropShadow.distance = 1;
+					break;
+					case DPIClassification.DPI_240:
+						smallerHeight = 46+32;
+						largerHeight = 117;
+						xLine = 75;
+						xLabel = 75+39;
+						circle1Width = 46;
+						circle2Width = 75;
+						xCircle = (xLine + 3) - circle1Width/2;
+						xCircle1 = (xLine + 3) - circle1Width/2;
+						xCircle2 = (xLine + 3) - circle2Width/2;
+						lblStation.setStyle("verticalCenter", 3);
+						SubtleDropShadow.distance = 2;
+						break;
+					case DPIClassification.DPI_320:
+						smallerHeight = 62+56;
+						largerHeight = 156;
+						xLine = 100;
+						xLabel = 100+52;
+						circle1Width = 62;
+						circle2Width = 100;
+						xCircle = (xLine + 5) - circle1Width/2;
+						xCircle1 = (xLine + 5) - circle1Width/2;
+						xCircle2 = (xLine + 5) - circle2Width/2;
+						lblStation.setStyle("verticalCenter", 4);
+						SubtleDropShadow.distance = 2;
+						break;
+				}
+				xLabelStart = xLabel;
+				height = smallerHeight;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		
+		<s:Fade id="effectMove" target="{quickTimes}" alphaFrom="0" alphaTo="1" />
+		<s:DropShadowFilter id="SubtleDropShadow" blurX="2" blurY="2" distance="2" alpha="0.8" />
+		<s:GlowFilter id="glowFilter" color="0xffffff" blurX="5" blurY="5" alpha="0.8" />
+		<s:MultiDPIBitmapSource id="circle1"
+			source160dpi="{CaltrainTimes.StationCircle1DPI160}"
+			source240dpi="{CaltrainTimes.StationCircle1DPI240}"
+			source320dpi="{CaltrainTimes.StationCircle1DPI320}"/>
+		
+		<s:MultiDPIBitmapSource id="circle2"
+			source160dpi="{CaltrainTimes.StationCircle2DPI160}"
+			source240dpi="{CaltrainTimes.StationCircle2DPI240}"
+			source320dpi="{CaltrainTimes.StationCircle2DPI320}"/>
+		
+		<s:MultiDPIBitmapSource id="circle3"
+			source160dpi="{CaltrainTimes.StationCircle3DPI160}"
+			source240dpi="{CaltrainTimes.StationCircle3DPI240}"
+			source320dpi="{CaltrainTimes.StationCircle3DPI320}"/>
+	</fx:Declarations>
+	
+	<s:Image id="imgLine" height="100%" x="{xLine}" scaleMode="stretch">
+		<s:source>
+			<s:MultiDPIBitmapSource
+				source160dpi="{CaltrainTimes.StationLineDPI160}"
+				source240dpi="{CaltrainTimes.StationLineDPI240}"
+				source320dpi="{CaltrainTimes.StationLineDPI320}"/>
+		</s:source>
+	</s:Image>
+	<s:Image id="imgCircle" verticalCenter="0" x="{xCircle}">
+		<s:source>
+			<s:MultiDPIBitmapSource
+				source160dpi="{CaltrainTimes.StationCircle1DPI160}"
+				source240dpi="{CaltrainTimes.StationCircle1DPI240}"
+				source320dpi="{CaltrainTimes.StationCircle1DPI320}"/>
+		</s:source>
+	</s:Image>
+	<s:Label id="lblStation" text="{data}" x="{xLabel}" styleName="stationText1" filters="{SubtleDropShadow}"/>
+	<!-- grey 777777
+		 green 00ff60
+	  	 yellow f0ff00
+		 red 	0xA10C11 -->
+	<s:VGroup id="quickTimes" verticalCenter="0" right="0" alpha="0" gap="0" height="100%">
+		<s:Label id="resultsNorth" text="Next Southbound 4:28" styleName="resultsQuick"
+				 width="100%"
+				 backgroundColor="0xA10C11" backgroundAlpha="0.2" filters="{SubtleDropShadow}" />
+		<s:Spacer height="100%" />
+		<s:Label id="resultsSouth" text="Next Northbound 4:23" styleName="resultsQuick"
+				 width="100%"
+				 backgroundColor="0x777777" backgroundAlpha="0.2" filters="{SubtleDropShadow}" />
+	</s:VGroup>
+
+</s:ItemRenderer>

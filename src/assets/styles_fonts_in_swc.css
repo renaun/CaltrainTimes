@@ -1,0 +1,252 @@
+/* CSS file 
+  U+0041-U+005A, /* Upper-Case [A..Z] /
+           U+0061-U+007A, /* Lower-Case a-z /
+           U+0030-U+0039, /* Numbers [0..9] /
+           U+002E-U+002E; /* Period [.] /
+
+*/
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace ct "com.renaun.caltrain.components.*";
+@namespace cr "com.renaun.caltrain.renderers.*";
+@namespace ree "com.renaun.components.*";
+
+ree|SpinnerDataGroup s|VScrollBar, s|List s|VScrollBar
+{
+	skinClass: ClassReference("com.renaun.skins.mobile.VScrollBarSkin");
+}
+
+ree|SpinnerDataGroup
+{
+	skinClass: ClassReference("com.renaun.skins.mobile.SpinnerDataGroupSkin");	
+}
+/*
+font-family: "Helvetica 77 Bold Condensed Oblique";
+font-family: myHelveNeueBolConObl;
+
+@font-face
+{
+	src: url("/assets/fonts/HelveticaNeueBoldCondObl.otf");
+	fontFamily: myHelveNeueBolConObl;
+	font-style: italic;
+	font-weight: bold;
+	embedAsCFF: true;
+	unicodeRange: U+0041-U+007F;
+}
+
+
+font-family: "Helvetica Neue LT Std 75 Bold";
+font-family: myHelveBol;
+@font-face
+{
+	src: url("/assets/fonts/HelveticaLTStd-Bold.otf");
+	fontFamily: myHelveBol;
+	advancedAntiAliasing : false;
+	embedAsCFF: true;
+	unicodeRange: U+0041-U+007F;
+}
+
+font-family: "Helvetica Neue LT Std 97 Black Condensed";
+font-family: myHelveNeueBlkCn;
+@font-face
+{
+	src: url("/assets/fonts/HelveticaNeueLTStd-BlkCn.otf");
+	fontFamily: myHelveNeueBlkCn;
+	advancedAntiAliasing : false;
+	embedAsCFF: true;
+	unicodeRange: U+0020-U+007F;
+}
+
+font-family: "Helvetica Neue LT Std 77 Bold Condensed";
+font-family: myHelveNeueBdCn;
+@font-face
+{
+	src: url("/assets/fonts/HelveticaNeueLTStd-BdCn.otf");
+	fontFamily: myHelveNeueBdCn;
+	advancedAntiAliasing : false;
+	embedAsCFF: true;
+	unicodeRange: U+0020-U+007F;
+}
+
+font-family: "Helvetica Neue LT Std 77 Bold Condensed";
+font-family: myHelveNeueBdCn2;
+@font-face
+{
+	src: url("/assets/fonts/HelveticaNeueLTStd-BdCn.otf");
+	fontFamily: myHelveNeueBdCn2;
+	advancedAntiAliasing : false;
+	embedAsCFF: false;
+	unicodeRange: U+0020-U+007F;
+}
+
+font-family: "Helvetica Neue LT Std 47 Light Condensed";
+font-family: myHelveNeueLtCn;
+@font-face
+{
+	src: url("/assets/fonts/HelveticaNeueLTStd-LtCn.otf");
+	fontFamily: myHelveNeueLtCn;
+	advancedAntiAliasing : false;
+	embedAsCFF: true;
+	unicodeRange: U+0030-U+007F;
+}
+
+font-family: "Helvetica Neue LT Std 47 Light Condensed";
+font-family: myHelveNeueLtCn2;
+@font-face
+{
+	src: url("/assets/fonts/HelveticaNeueLTStd-LtCn.otf");
+	fontFamily: myHelveNeueLtCn2;
+	advancedAntiAliasing : false;
+	embedAsCFF: false;
+	unicodeRange: U+0024-U+007F;
+}
+
+
+font-family: "Helvetica Neue LT Std 55 Roman";
+font-family: myHelveNeueRoman;
+@font-face
+{
+	src: url("/assets/fonts/HelveticaNeueLTStd-Roman.otf");
+	fontFamily: myHelveNeueRoman;
+	advancedAntiAliasing : false;
+	embedAsCFF: true; 
+	unicodeRange: U+0041-U+007F;
+}
+*/
+
+global
+{
+	color: #ffffff;
+}
+.headerText, .headerText2
+{
+	font-size: 36;
+	
+	font-family: "Helvetica 77 Bold Condensed Oblique";
+	color: #000000;
+	font-style: italic;
+	font-weight: bold;
+	advancedAntiAliasing : true;
+}
+.headerText2 { color: #a10c11 }
+
+#grpHeader
+{ 
+	skinClass: ClassReference("com.renaun.caltrain.skins.HeaderGroupSkin");
+}
+
+.blackBox
+{ 
+	skinClass: ClassReference("com.renaun.caltrain.skins.BlackBoxSkin");
+}
+/* greyed out 4d4d4d */
+.text1
+{
+	color: #c0c0c0;
+	font-size: 18;
+	font-family: "Helvetica Neue LT Std 77 Bold Condensed";
+}
+.text2
+{
+	color: #ffffff;
+	font-size: 18;
+	font-family: "Helvetica Neue LT Std 47 Light Condensed";
+}
+
+.alertText2 { color: #ffffff; font-family: "Helvetica Neue LT Std 47 Light Condensed"; font-size: 14px; }
+.alertText { color: #ffffff; font-family: "Helvetica Neue LT Std 47 Light Condensed"; font-size: 14px; }
+.alertHeader {	color: #a10c11;	font-family: "Helvetica Neue LT Std 97 Black Condensed";	font-size: 14px; }
+
+.weekText
+{
+ 	color: #ffffff;
+	font-size: 12;
+ 	font-family: "Helvetica Neue LT Std 75 Bold";
+}
+
+.resultsQuick
+{
+	color: #ffffff;
+	font-size: 14;
+	font-family: "Helvetica Neue LT Std 47 Light Condensed";
+}
+.results
+{
+	color: #ffffff;
+	font-size: 14;
+	font-family: "Helvetica Neue LT Std 47 Light Condensed";
+	textAlign: center;
+}
+
+.resultsHeader
+{
+	color: #ffffff;
+	font-size: 15;
+	font-family: "Helvetica Neue LT Std 77 Bold Condensed";
+}
+
+ct|StationBlackBox .text2Grey
+{
+	color: #c0c0c0;
+}
+ct|StationBlackBox .textDisabled
+{
+	color: #4d4d4d;
+}
+
+.stationText1
+{
+	color: #FFFFFF;
+	font-family: "Helvetica Neue LT Std 47 Light Condensed";
+}
+.stationText2
+{
+	color: #FFFFFF;
+	font-size: 24;
+	font-family: "Helvetica Neue LT Std 77 Bold Condensed";
+}
+
+.editText
+{
+	font-size: 12;
+	font-family: "Helvetica Neue LT Std 55 Roman";
+}
+
+@media (application-dpi: 160)
+{
+	.headerText, .headerText2 { font-size: 36; paddingTop: 2; }
+	ct|StationBlackBox .text2, ct|StationBlackBox .text1 { font-size: 18; }
+	.editText { font-size: 12;paddingTop:2px }
+	.weekText { font-size: 12; paddingLeft: 16; paddingRight: 16; }
+	.text1, .text2, .stationText1 { font-size: 18; paddingTop: 4; }
+	.stationText2 { font-size: 18; }
+	.resultsQuick { font-size: 14; paddingTop: 4; paddingLeft: 4; paddingRight: 24; }
+	.resultsHeader, .results { font-size: 14; paddingTop: 6; }
+	.alertText, .alertText2, .alertHeader { font-size: 14; }
+}
+
+@media (application-dpi: 240)
+{
+	.headerText, .headerText2 { font-size: 54; paddingTop: 4; }
+	ct|StationBlackBox .text2, ct|StationBlackBox .text1 { font-size: 27; }
+	.editText { font-size: 16;paddingTop:3px }
+	.weekText { font-size: 18; paddingLeft: 24; paddingRight: 24; }
+	.text1, .text2, .stationText1 { font-size: 27; paddingTop: 6; }
+	.stationText2 {	font-size: 27; }
+	.resultsQuick { font-size: 21; paddingTop: 6; paddingLeft: 6; paddingRight: 36; }
+	.resultsHeader, .results { font-size: 21; paddingTop: 8; }
+	.alertText, .alertText2, .alertHeader { font-size: 21; }
+}
+
+@media (application-dpi: 320)
+{
+	.headerText, .headerText2 {	font-size: 72; paddingTop: 6; }
+	ct|StationBlackBox .text2, ct|StationBlackBox .text1 { font-size: 36; }
+	.editText { font-size: 24;paddingTop:5px }
+	.weekText {	font-size: 24; paddingLeft: 32; paddingRight: 32; }
+	.text1, .text2, .stationText1 {	font-size: 36; paddingTop: 8; }
+	.stationText2 {	font-size: 36; }
+	.resultsQuick { font-size: 28; paddingTop: 8; paddingLeft: 8; paddingRight: 48; }
+	.resultsHeader, .results { font-size: 28; paddingTop: 10; }
+	.alertText, .alertText2, .alertHeader { font-size: 28; }
+}
+

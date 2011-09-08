@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" height="100%"
+		  x="{filterPositionX(width,'default')}"
+		  x.times="{filterPositionX(width - (lbl1.x+lblGrp.x+lbl1.width), 'times')}"
+		  x.details="{filterPositionX(detailsX, 'details')}"
+		  click.times="currentState = (currentState == 'details') ? 'times' : 'details'"
+		  creationComplete="creationCompleteHandler()">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.renaun.caltrain.vo.StationVO;
+			import com.renaun.caltrain.vo.TimesVO;
+			
+			import flash.net.dns.AAAARecord;
+			import flash.profiler.showRedrawRegions;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.core.DPIClassification;
+			import mx.core.FlexGlobals;
+			import mx.events.EffectEvent;
+			import mx.events.FlexEvent;
+			
+			[Bindable]
+			public var detailsX:int = 0;
+			[Bindable]
+			public var alphaBar:Number = 0.0;
+			
+			[Bindable]
+			private var offset:int = -10;
+			
+			[Bindable]
+			public var currentTimeIndex:int = -1;
+			
+			private var fromStation:StationVO;
+			private var toStation:StationVO;
+
+			public var trainTimes:Array;
+			
+			private function filterPositionX(pos:int, type:String):int
+			{
+				var c:CaltrainTimes = (FlexGlobals.topLevelApplication as CaltrainTimes);
+				//trace("filterPos: " + pos + " - " + type + " - " + c.largeViewWidth +
+				// " - " + c.currentState + " - " + c.grpStations.width);
+				if (c.currentState == "largeView")
+				{
+					//trace("return2");
+					return c.largeViewWidth;
+				}
+				else
+					return pos;
+			}
+			
+			protected function creationCompleteHandler():void
+			{
+				btnDays.selected = CaltrainTimes.todaysServiceID == 2;
+				btnEnds.selected = !btnDays.selected;
+				var minHeight:int = 0;
+				x = width;
+				switch (FlexGlobals.topLevelApplication.runtimeDPI)
+				{
+					case DPIClassification.DPI_160:
+						minHeight = 50;
+						header.height = 50;
+						grpButtons.height = 40;
+						offset = 1;
+						break;
+					case DPIClassification.DPI_240:
+						minHeight = 75;
+						header.height = 75;
+						grpButtons.height = 60;
+						stroke1.weight = 1;
+						stroke2.weight = 2;
+						offset = 1;
+						break;
+					case DPIClassification.DPI_320:
+						minHeight = 100;
+						header.height = 100;
+						grpButtons.height = 80;
+						stroke1.weight = 2;
+						stroke2.weight = 2;
+						offset = 2;
+						break;
+				}
+				nsBound.x = 2 * (grpButtons.height/10);
+				nsBound.source = northbound;
+			}
+			
+			public function setStations(fromStation:StationVO, toStation:StationVO):void
+			{
+				btnDays.selected = CaltrainTimes.todaysServiceID == 2;
+				btnEnds.selected = !btnDays.selected;
+				
+				this.fromStation = fromStation;
+				this.toStation = toStation;
+				nsBound.source = (fromStation.stopLat < toStation.stopLat) ? northbound : southbound;
+				lstTimes.alpha = 0;
+				createTrainTimes();
+				
+				if (currentState == "times")
+					getTimes();
+			}
+			
+			private function createTrainTimes(serviceID:int = -1):void
+			{
+				// Setup trainTimes data
+				// Get Times
+				var direction:int = (fromStation.stopLat < toStation.stopLat) ? 0 : 1;
+				var fromStopID:int = fromStation.stopID;
+				var toStopID:int = toStation.stopID;
+				var argServiceID:int = CaltrainTimes.todaysServiceID;
+				if (serviceID > -1)
+					argServiceID = serviceID;
+				var sql:String = "SELECT stop_times.trip_id, trips.route_id FROM stop_times, trips WHERE trips.service_id=" + argServiceID +
+					" AND trips.trip_id=stop_times.trip_id AND trips.direction=" + direction + 
+					" AND (stop_times.stop_id="+fromStopID+" OR stop_times.stop_id="+toStopID+")" +
+					" GROUP BY stop_times.trip_id HAVING COUNT(stop_times.trip_id)>1";
+				var results:Array = FlexGlobals.topLevelApplication.processSQL(sql);
+				var results2:Array;
+				trainTimes = [];
+				var trainNums:Object = new Object();
+				var departureTime:int = 0;
+				var arrivalTime:int = 0;
+				currentTimeIndex = -1;
+				var lastDepartureTime:int = 0;
+				var fFare:String = "";
+				for (var i:int = 0; i < results.length; i++) 
+				{
+					try
+					{
+						var tNum:String = results[i]["trip_id"];
+						if (tNum.substr(0,1) == "9" && trainNums[tNum.substr(1,2)])
+							continue;
+						sql = "SELECT stop_times.stop_id, stop_times.arrival_time, stops.zone_id FROM stop_times, stops WHERE trip_id="+results[i]["trip_id"]+" AND (stop_times.stop_id="+fromStopID+" OR stop_times.stop_id="+toStopID+") AND stop_times.stop_id=stops.stop_id";
+						results2 = FlexGlobals.topLevelApplication.processSQL(sql);
+						if (results2.length != 2)
+							continue;
+						
+						var t:TimesVO = new TimesVO();
+						departureTime = (results2[0]["stop_id"] == fromStopID) ? results2[0]["arrival_time"] : results2[1]["arrival_time"];
+						arrivalTime = (results2[0]["stop_id"] == fromStopID) ? results2[1]["arrival_time"] : results2[0]["arrival_time"];
+						//trace("tNum:["+fromStopID+"/"+toStopID+"] " + tNum + " - " + currentTimeIndex + " - " + departureTime +"/"+ arrivalTime);
+						
+						t.departureValueTime = departureTime;
+						t.duration = CaltrainTimes.formatTime(arrivalTime-departureTime, "mins");
+						t.departureTime = CaltrainTimes.formatTime(departureTime);
+						t.arrivalTime = CaltrainTimes.formatTime(arrivalTime);
+						t.trainNumber = tNum;
+						trainNums[tNum.substr(1,2)] = true;
+						t.routeID = results[i]["route_id"];
+						if (fFare == "")
+						{
+							sql = "SELECT fare_attributes.price FROM fare_rules, fare_attributes WHERE fare_rules.fare_attribute_id=fare_attributes.fare_attribute_id AND fare_rules.route_id=1 AND " + 
+								"fare_rules.origin_id="+results2[0]["zone_id"]+" AND fare_rules.destination_id="+results2[1]["zone_id"];
+							results2 = FlexGlobals.topLevelApplication.processSQL(sql);
+							//t.fare = "$" + results2[0]["price"];
+							fFare = "$" + results2[0]["price"];
+						}
+						t.fare = fFare;
+						
+						trainTimes.push(t);
+					}
+					catch(sqlError:SQLError)
+					{
+						continue;
+					}
+				}
+				
+				trainTimes = trainTimes.sort(orderTimes);	
+			}
+			
+			public function getTimes(refresh:Boolean = false, serviceID:int = -1):void
+			{
+				if (currentState == "details")
+				{
+					lstTimes.alpha = 0;
+				}
+				if (refresh)
+					createTrainTimes(serviceID);
+				
+				
+				var d:Date = new Date();
+				var cTime:int = (d.getHours() * 60) + d.getMinutes();
+				// Find index of item that should be visible relative to current time
+				for (var j:int = 0; j < trainTimes.length; j++) 
+				{
+					
+					if (trainTimes[j].departureValueTime > cTime)
+					{
+						currentTimeIndex = j;
+						break;
+					}
+				}
+				if (currentTimeIndex >= trainTimes.length)
+					currentTimeIndex = -1; // Since there is not at least one item less then currentTime just let it start at the first item
+				
+				lstTimes.scroller.mx_internal::adjustScrollPositionAfterSoftKeyboardDeactivate();
+				lstTimes.dataProvider = new ArrayList(trainTimes);
+			}
+			private function orderTimes(a:Object, b:Object):int 
+			{ 
+				var name1:int = (a as TimesVO).departureValueTime; 
+				var name2:int = (b as TimesVO).departureValueTime; 
+				if (name1 < name2) 
+				{ 
+					return -1; 
+				} 
+				else if (name1 > name2) 
+				{ 
+					return 1; 
+				} 
+				else 
+				{ 
+					return 0; 
+				} 
+			} 
+			
+			protected function scrollToItem():void
+			{
+				//lstTimes.scroller.verticalScrollBar.maximum = (lstTimes.dataProvider.length * minHeight) - lstTimes.dataGroup.height;
+				//trace(lstTimes.scroller.verticalScrollBar.value + " - " + lstTimes.dataGroup.contentHeight +"/"+ lstTimes.dataGroup.height + " - " + currentTimeIndex + " - " + lstTimes.dataProvider.length + " t: " + tick);
+				//lstTimes.ensureIndexIsVisible(15);
+				if (currentTimeIndex > -1)
+				{
+					//trace("Scroll: " + lstTimes.dataGroup.verticalScrollPosition + " - " + currentTimeIndex)
+					lstTimes.dataGroup.verticalScrollPosition = minHeight * currentTimeIndex;
+					lstTimes.ensureIndexIsVisible(currentTimeIndex);
+					//trace(lstTimes.dataGroup.verticalScrollPosition + " - " + lstTimes.scroller.verticalScrollBar.value);
+					//lstTimes.dataGroup.verticalScrollPosition += lstTimes.dataGroup.height-minHeight;//(minHeight * currentTimeIndex) - lstTimes.dataGroup.verticalScrollPosition;
+					currentTimeIndex = -1;
+				}
+				if (lstTimes.alpha == 0)
+				{
+					lstTimesFade.alphaFrom = 0;
+					lstTimesFade.alphaTo = 1;
+					lstTimesFade.play();
+				}
+				//trace(lstTimes.scroller.verticalScrollBar.value + " - " + lstTimes.dataGroup.contentHeight +"/"+ lstTimes.dataGroup.height + " - " + currentTimeIndex + " - " + lstTimes.dataProvider.length);
+			}
+			
+			protected function fade1_effectEndHandler():void
+			{
+				if (currentState == "times")
+				{
+					getTimes();
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:transitions>
+		<s:Transition fromState="default">
+			<s:Parallel>
+				<s:Move target="{this}" duration="400" effectEnd="fade1_effectEndHandler()"/>
+			</s:Parallel>
+		</s:Transition>	
+		<s:Transition toState="details">
+			<s:Parallel>
+				<s:Move target="{this}" duration="500"/>
+				<s:Fade target="{grpButtons2}" duration="400" />
+			</s:Parallel>
+		</s:Transition>	
+	</s:transitions>
+	<fx:Declarations>
+		<s:Fade id="lstTimesFade" target="{lstTimes}" duration="400" />
+		<s:SolidColorStroke id="stroke1" color="0xffffff" alpha="0.6" weight="1" />
+		<s:SolidColorStroke id="stroke2" color="0x000000" alpha="0.4" weight="2" />
+		<s:DropShadowFilter id="headerDropShadow" blurX="2" blurY="2" distance="2" alpha="0.5" angle="132" />
+		<s:MultiDPIBitmapSource id="southbound" source160dpi="@Embed(source='/assets/dpi160/compassSouth.png')"
+								source240dpi="@Embed(source='/assets/dpi240/compassSouth.png')"
+								source320dpi="@Embed(source='/assets/dpi320/compassSouth.png')" />
+		<s:MultiDPIBitmapSource id="northbound" source160dpi="@Embed(source='/assets/dpi160/compassNorth.png')"
+								source240dpi="@Embed(source='/assets/dpi240/compassNorth.png')"
+								source320dpi="@Embed(source='/assets/dpi320/compassNorth.png')" />
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="default" />
+		<s:State name="times" />
+		<s:State name="details" />
+	</s:states>
+
+	<s:Group id="grpButtons"
+			  width="100%">
+		<s:BitmapImage id="nsBound" verticalCenter="0" />
+		
+		<s:HGroup id="grpButtons2" horizontalCenter="0" gap="0" verticalCenter="0" 
+				  enabled.default="false"
+				  alpha="0" alpha.times="0" alpha.details="1">
+			
+			<s:ToggleButton id="btnDays" click="btnEnds.selected = !btnEnds.selected;getTimes(true, 2)"
+							label="WEEKDAYS" skinClass="com.renaun.caltrain.skins.WeekdayButtonSkin" />
+			<s:ToggleButton id="btnEnds" click="btnDays.selected = !btnDays.selected;getTimes(true, 3)"
+							label="WEEKENDS" skinClass="com.renaun.caltrain.skins.WeekendButtonSkin" />
+		</s:HGroup>
+		
+	</s:Group>
+		
+	<s:Group id="header" width="100%" height="50" 
+			 top="{grpButtons.height}">
+		<s:Rect width="100%" height="100%">
+			<s:fill>
+				<s:SolidColor alpha="0.32" color="0x000000" />
+			</s:fill>
+		</s:Rect>
+		<s:Group id="maskRect" width="94%" width.times="100%" height="10" cacheAsBitmap="true"
+				 horizontalCenter="0">
+			<s:Rect width="100%" height="10">
+				<s:fill>
+					<s:LinearGradient>
+						<s:GradientEntry color="blue" alpha="0" alpha.times="{alphaBar}"/>
+						<s:GradientEntry color="black" ratio="0.1"  />
+						<s:GradientEntry color="black" ratio="0.9"  />
+						<s:GradientEntry color="red" alpha="0"/>
+					</s:LinearGradient>
+				</s:fill>
+			</s:Rect>
+		</s:Group>
+		<s:Image id="dots" width="94%" width.times="100%" fillMode="repeat" mask="{maskRect}" cacheAsBitmap="true"
+				 horizontalCenter="0">
+			<s:source>
+				<s:MultiDPIBitmapSource
+					source160dpi="{CaltrainTimes.ResultsHDotsDPI160}"
+					source240dpi="{CaltrainTimes.ResultsHDotsDPI240}"
+					source320dpi="{CaltrainTimes.ResultsHDotsDPI320}"/>
+			</s:source>
+		</s:Image>
+		<s:Group id="maskRect2" width="80%" height="10" bottom="-1" cacheAsBitmap="true"
+				 horizontalCenter="0">
+			<s:Rect width="100%" height="10">
+				<s:fill>
+					<s:LinearGradient>
+						<s:GradientEntry color="blue" alpha="0"/>
+						<s:GradientEntry color="black" ratio="0.1"  />
+						<s:GradientEntry color="black" ratio="0.9"  />
+						<s:GradientEntry color="red" alpha="0"/>
+					</s:LinearGradient>
+				</s:fill>
+			</s:Rect>
+		</s:Group>
+		<s:Image id="dots2" width="80%" fillMode="repeat" bottom="-1" mask="{maskRect2}" cacheAsBitmap="true"
+				 horizontalCenter="0">
+			<s:source>
+				<s:MultiDPIBitmapSource
+					source160dpi="{CaltrainTimes.ResultsHDotsDPI160}"
+					source240dpi="{CaltrainTimes.ResultsHDotsDPI240}"
+					source320dpi="{CaltrainTimes.ResultsHDotsDPI320}"/>
+			</s:source>
+		</s:Image>
+		<s:HGroup id="lblGrp" width="90%" horizontalCenter="0" verticalCenter="0" gap="0">
+			<s:Label id="lbl1" text="Departs" styleName="resultsHeader" textAlign="center" width="24%" filters="{headerDropShadow}" />
+			<s:Label id="lbl2" text="Arrives" styleName="resultsHeader" textAlign="center" width="24%" filters="{headerDropShadow}" />
+			<s:Label id="lbl3" text="Duration" styleName="resultsHeader" textAlign="center" width="24%" filters="{headerDropShadow}" />
+			<s:Label id="lbl4" text="#" styleName="resultsHeader" textAlign="center" width="12%" filters="{headerDropShadow}" />
+			<s:Label text="Fare" styleName="resultsHeader" textAlign="center" width="16%" filters="{headerDropShadow}" />
+		</s:HGroup>
+	</s:Group>
+	
+	
+	<s:List id="lstTimes" itemRenderer="com.renaun.caltrain.renderers.TrainTimeAS"
+			contentBackgroundAlpha="0.0" top="{header.y+header.height}" bottom="0"
+			updateComplete="scrollToItem();"
+			
+			alpha="0"
+			width="100%" />
+	
+	
+	<s:Group id="grpLines" width="100%" top="{grpButtons.height}" bottom="-1" cacheAsBitmap="true">
+		<!--
+		<s:Line id="l1a" x="0" height="100%" stroke="{stroke1}" visible="false" visible.times="true" visible.details="false" />
+		<s:Line id="l1b" x="{stroke1.weight}" height="100%" stroke="{stroke2}" visible="false"  visible.times="true" visible.details="false" />
+		-->
+		<s:Line id="l2a" x="{lbl1.x+lblGrp.x+lbl1.width+offset}" height="100%" stroke="{stroke1}" />
+		<s:Line id="l2b" x="{lbl1.x+lblGrp.x+lbl1.width+offset+stroke1.weight}" height="100%" stroke="{stroke2}" />
+		<s:Line id="l3a" x="{lbl2.x+lblGrp.x+lbl2.width+offset}" height="100%" stroke="{stroke1}" />
+		<s:Line id="l3b" x="{lbl2.x+lblGrp.x+lbl2.width+offset+stroke1.weight}" height="100%" stroke="{stroke2}" />
+		<s:Line id="l4a" x="{lbl3.x+lblGrp.x+lbl3.width+offset}" height="100%" stroke="{stroke1}" />
+		<s:Line id="l4b" x="{lbl3.x+lblGrp.x+lbl3.width+offset+stroke1.weight}" height="100%" stroke="{stroke2}" />
+		<s:Line id="l5a" x="{lbl4.x+lblGrp.x+lbl4.width+offset}" height="100%" stroke="{stroke1}" />
+		<s:Line id="l5b" x="{lbl4.x+lblGrp.x+lbl4.width+offset+stroke1.weight}" height="100%" stroke="{stroke2}" />
+	</s:Group>
+</s:Group>

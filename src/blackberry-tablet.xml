@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<qnx>
+   <icon>
+      <image>assets/icons/icon86.png</image>
+   </icon>
+
+   <splashscreen>assets/icons/bbsplash_land.jpg:assets/icons/bbsplash_prot.jpg</splashscreen>
+   <permission>access_shared</permission>
+   <permission>read_geolocation</permission>
+   <permission>access_internet</permission>
+   <buildId>29</buildId>
+   <platformVersion>1.0.6.0</platformVersion>
+</qnx>
