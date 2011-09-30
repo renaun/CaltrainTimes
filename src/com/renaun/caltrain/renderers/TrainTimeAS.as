@@ -71,6 +71,8 @@ package com.renaun.caltrain.renderers
 
 		private var mask2:Group;
 		
+		private var drawAlert:Boolean = false;
+		
 		/**
 		 * @private
 		 *
@@ -85,6 +87,8 @@ package com.renaun.caltrain.renderers
 				return;
 			
 			var item:TimesVO = value as TimesVO;
+			
+			drawAlert = item.hasAlert;
 			
 			lblFrom.text = item.departureTime;
 			lblTo.text = item.arrivalTime;
@@ -230,10 +234,48 @@ package com.renaun.caltrain.renderers
 		{
 			//super.drawBackground(unscaledWidth, unscaledHeight);
 			// do any drawing for the background of the item renderer here  
+			graphics.clear();
 			graphics.beginFill(backgroundColor, backgroundAlpha);
-			graphics.lineStyle();
 			graphics.drawRect(0, 0, unscaledWidth, unscaledHeight);
-			graphics.endFill();  
+			graphics.endFill(); 
+			if (drawAlert)
+			{
+				/*
+				graphics.lineStyle(2, 0x991100, 0.6);
+				graphics.drawRect(1,0, unscaledWidth-2, unscaledHeight-2);
+				
+				graphics.lineStyle(2, 0xEE1100, 0.2);
+				graphics.drawRect(3,2, unscaledWidth-4, unscaledHeight-4);
+				*/
+				
+				switch (applicationDPI)
+				{
+					case DPIClassification.DPI_160:
+						graphics.lineStyle(3, 0xa10c11, 0.7);
+						graphics.drawRect(1,1, unscaledWidth-2, unscaledHeight-2);
+						
+						graphics.lineStyle(2, 0xffffff, 0.2);
+						graphics.drawRect(4,4, unscaledWidth-8, unscaledHeight-8);
+						break;
+					case DPIClassification.DPI_240:
+						graphics.lineStyle(6, 0xa10c11, 0.7);
+						graphics.drawRect(1,3, unscaledWidth-2, unscaledHeight-6);
+						
+						graphics.lineStyle(4, 0xffffff, 0.2);
+						graphics.drawRect(7,9, unscaledWidth-14, unscaledHeight-18);
+						break;
+					case DPIClassification.DPI_320:
+						
+						graphics.lineStyle(6, 0xa10c11, 0.7);
+						graphics.drawRect(1,3, unscaledWidth-2, unscaledHeight-6);
+						
+						graphics.lineStyle(4, 0xffffff, 0.2);
+						graphics.drawRect(7,9, unscaledWidth-14, unscaledHeight-18);
+						break;
+				}
+				
+			}
+			
 		}
 		
 		/**

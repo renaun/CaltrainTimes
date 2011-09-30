@@ -38,6 +38,63 @@
 
 			public var trainTimes:Array;
 			
+			private var alertTrains:Array = [];
+			
+			public function clearAlertTrains():void
+			{
+				for (var j:int = 0; j < trainTimes.length; j++) 
+				{
+					(trainTimes[j] as TimesVO).hasAlert = false;
+				}
+				lstTimes.dataProvider = new ArrayList(trainTimes);
+			}
+			
+			public function setAlertTrains(alertTrains:Array):void
+			{
+				this.alertTrains = alertTrains;
+				var trainNumber:String = "";
+				var alertTrainNumber:String = "";
+				for (var i:int = 0; i < this.alertTrains.length; i++) 
+				{
+					alertTrainNumber = this.alertTrains[i];
+					for (var j:int = 0; j < trainTimes.length; j++) 
+					{
+						var timeVO:TimesVO = trainTimes[j] as TimesVO;
+						if (timeVO.trainNumber.substr(0,1) == "9")
+						{
+							var num:int = int(timeVO.trainNumber.substr(1,2));
+							trainNumber = "2" + ((num < 10) ? "0" : "") + num;
+							
+							if (trainNumber == alertTrainNumber)
+								(trainTimes[j] as TimesVO).hasAlert = true;
+
+							if (num == 8 || num == 18 || num == 28)
+								num += 2;
+							else
+								num += 4;
+							trainNumber = "2" + num;
+							
+							if (trainNumber == alertTrainNumber)
+							{
+								(trainTimes[j] as TimesVO).hasAlert = true;
+								break;
+							}
+							
+						}
+						else
+						{
+							if (timeVO.trainNumber == alertTrainNumber)
+							{
+								(trainTimes[j] as TimesVO).hasAlert = true;
+								break;
+							}
+						}
+					}
+				}
+				
+				lstTimes.dataProvider = new ArrayList(trainTimes);
+			}
+			
 			private function filterPositionX(pos:int, type:String):int
 			{
 				var c:CaltrainTimes = (FlexGlobals.topLevelApplication as CaltrainTimes);

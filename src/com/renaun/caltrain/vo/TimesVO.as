@@ -13,6 +13,7 @@ public class TimesVO
 	public var fare:String = "";
 	public var trainNumber:String = "";
 	public var routeID:int = -1;
+	public var hasAlert:Boolean = false;
 	
 	public function toString():String
 	{

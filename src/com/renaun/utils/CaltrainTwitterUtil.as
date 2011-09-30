@@ -22,7 +22,7 @@ public class CaltrainTwitterUtil
 	private var lastData:Array;
 	private var lastCallTime:Number = 0;
 	
-	
+	public var currentDirection:int = 0;
 	public var todaysFilteredTweets:Array;
 	private var callback:Function = null;
 	private var trainsFilter:Dictionary;
@@ -37,9 +37,25 @@ public class CaltrainTwitterUtil
 	public function findTweetsForTrains(trains:Array, callback:Function):void
 	{
 		trainsFilter = new Dictionary();
+		var trainNumber:String = "";
 		for (var i:int = 0; i < trains.length; i++) 
 		{
-			trainsFilter[trains[i].trainNumber] = true;
+			trainNumber = trains[i].trainNumber;
+			if (trainNumber.substr(0,1) == "9")
+			{
+				var num:int = int(trainNumber.substr(1,2));
+				trainNumber = "2" + ((num < 10) ? "0" : "") + num;
+				trainsFilter[trainNumber] = true;
+				if (num == 8 || num == 18 || num == 28)
+					num += 2;
+				else
+					num += 4;
+				trainNumber = "2" + num;
+				trainsFilter[trainNumber] = true;
+				
+			}
+			else
+				trainsFilter[trainNumber] = true;
 		}
 		todaysFilteredTweets = [];
 		
@@ -92,7 +108,7 @@ public class CaltrainTwitterUtil
 		for each (var item:XML in xml..status) 
 		{
 			var d:Date = stringToDate(item.created_at);
-			if (d.getTime() > (new Date()).getTime()-(60000*150)) // 2.5 hours ago everything else before that is old news
+			if (d.getTime() > (new Date()).getTime()-(60000*360)) // 6 hours ago everything else before that is old news
 			{
 				//trace("parseData2: " + item.text + " - " + item.user.id + " - "+ stringToDate(item.created_at).toDateString());
 				lastData.push({label: feedType + ": " + item.text.toString(), id: item.id.toString(), timeSort: d.getTime(), time: d, type: feedType});
@@ -105,18 +121,27 @@ public class CaltrainTwitterUtil
 	{
 		//var xml:XML = new XML(data);
 		//trace("processData: " + data); 
+		var trainMatches:Array = [];
+		var uniqueTrains:Dictionary = new Dictionary();
 		var pattern:RegExp = /\d\d\d/g; 
 		for (var i:int = 0; i < data.length; i++) 
 		{
 			var results:Array = (data[i].label as String).match(pattern);
 			var isMatch:Boolean = false;
 			for (var j:int = 0; j < results.length; j++) 
+			{
+				if (trainsFilter[results[j]] && !uniqueTrains[results[j]])
+				{
+					trainMatches.push(results[j]);
+					uniqueTrains[results[j]] = true;
+				}
 				isMatch = isMatch || (trainsFilter[results[j]]);
+			}
 			if (isMatch)
 				todaysFilteredTweets.push(data[i]);
 		}
 		if (todaysFilteredTweets.length > 0)
-			callback();
+			callback(trainMatches);
 	}
 	
 	

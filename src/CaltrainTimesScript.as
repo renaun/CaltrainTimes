@@ -130,20 +130,42 @@ public var hasBothStations:Boolean = false;
 public var fromStationNextTimes:Array;
 public var routeTimes:Array;
 
+private var lastStationType:String = "";
 
+/**
+ *  DB related properties
+ */
 private var dbFile:File;
 private var sqlConn:SQLConnection;
 private var sqlStatement:SQLStatement;
 
+/**
+ *  GPS related properties
+ */
 private var geo:Geolocation;
 private var timer:Timer;// = new Timer(300);
 private var geoValueCount:int = 0;
 private var rotDelta:Number = 0.06;
+
+[Bindable]
+public static var hasGPS:Boolean = true;
+
+/**
+ * 	Class that handles Twitter calls.
+ */
 private var twitterUtil:CaltrainTwitterUtil;
 
-
+/**
+ * 	Value to set between Weekday or Weekend schedule times. 
+ * 	2 = Weekday
+ * 	3 = Weekend
+ */
 public static var todaysServiceID:int = 2;
 
+/**
+ * 	Things to do at startup of application (not called when apps comes activate
+ *  from being in the background).
+ */
 protected function init():void
 {	
 	// Include Font classes to be uncommented if you do not have the fonts
@@ -160,7 +182,7 @@ protected function init():void
 	font = new myHelvNeueBolConObl();
 	*/
 	
-	
+	// Check if DB is present, if not copy over to applicationStorageDirectory
 	var src:Array = [];
 	try
 	{
@@ -218,19 +240,15 @@ protected function init():void
 		trace("error: " + error.message);		
 	}
 	
-	/*
-	var src:Array = ["San Francisco", "22nd Street", "South San Francisco", "San Bruno", "Millbrae", 
-		"Burlingame", "San Mateo", "Hayward Park", "Hillsdale", "Bellmont", "San Carlos", "Redwood City", 
-		"Menlo Park", "Palo Alto", "California Avenue", "San Antonio", "Mountain View", "Sunnyvale", "Lawrence", 
-		"Santa Clara", "College Park", "San Jose Diridon", "Tamien", "Capital", "Blossom Hill", "Morgan Hill", 
-		"San Martin", "Gillroy"];
-	*/
 	stations = new ArrayList(src);
 	
-	
+	// Listen for changes in the grpTrainSchedule states to know if we need to transition to show full schedule
 	this.grpTrainSchedule.addEventListener(StateChangeEvent.CURRENT_STATE_CHANGE, currentStateChangeHandler);
 }
 
+/**
+ * 	Generic method to process SQL statements in one place
+ */
 public function processSQL(sql:String):Array
 {
 	try
@@ -255,36 +273,28 @@ public function processSQL(sql:String):Array
 	return [];
 }
 
+/**
+ * 	Called after everything has been created, laid out, and on stage.
+ */
 protected function appReady():void
 {
-	
-	//this.stage.quality = StageQuality.LOW;
-	//var str:String = "" + this.stage.quality + "/" + this.applicationDPI;
-	//lblHeaderText2.text = str;
+	// Give the trainschedule some valid stations to create itemrenderers and such, not seen
 	setSelector("from");
 	this.grpTrainSchedule.setStations(stations.getItemAt(1) as StationVO, stations.getItemAt(stations.length-8) as StationVO);
+	
+	// Resize Handler
 	this.stage.addEventListener(StageOrientationEvent.ORIENTATION_CHANGING, resizeHandler);
 	
+	// Listen for back button on Android
 	if (Capabilities.manufacturer.indexOf("Android") > -1)
 	{
 		this.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyEventHandler);
 	}
-	
-//	if (Capabilities.screenResolutionX > 599 && Capabilities.screenResolutionY > 599
-//		&& Capabilities.cpuArchitecture != "x86")
-//	{
-//		largeViewWidth = Math.max(300, this.stage.stageWidth * 0.4);
-//		this.currentState = "largeView";
-//	}
-//	forceLargeViewSizes();
-//	
-//	
-//	
-//	
+
+	// GPS testing code
 	/*
 	var lat:Number = 37.7708301;//-122.394322993;//37.335000;
 	var lon:Number = -122.4018971;//37.7764393371;//-121.914998;
-	
 	
 	var sql:String = "SELECT stop_id, name, stop_lon, stop_lat FROM stops";
 	var results:Array = processSQL(sql);
@@ -309,21 +319,9 @@ protected function appReady():void
 	//trace("Match: " + stopName + " - " + stopID + " - " + dis);
 }
 
-private function forceLargeViewSizes():void
-{
-	return;//
-	if (Capabilities.screenResolutionX > 599 && Capabilities.screenResolutionY > 599
-		&& Capabilities.cpuArchitecture != "x86")
-	{
-		largeViewWidth = Math.max(300, this.stage.stageWidth * 0.4)
-		this.grpStations.width = largeViewWidth;
-		this.grpTrainSchedule.width = this.width - largeViewWidth;
-		this.grpTrainSchedule.grpButtons2.alpha = 1;
-		this.grpTrainSchedule.detailsX = this.grpTrainSchedule.x;
-		this.grpTrainSchedule.alphaBar = 0;
-	}
-}
-
+/**
+ *  Handle Android Back button
+ */
 protected function keyEventHandler(event:KeyboardEvent):void
 {
 	if (event.keyCode != Keyboard.BACK)
@@ -342,19 +340,20 @@ protected function keyEventHandler(event:KeyboardEvent):void
 	}
 }
 
+/**
+ * 	Handler resizing of app, usually on orientation changes
+ */
 protected function resizeHandler(event:StageOrientationEvent):void
 {
-	
 	if (this.grpAlerts.currentState == "details")
 		this.grpAlerts.y = this.grpAlerts.detailsY;
-	else if (this.grpAlerts.currentState == "details")
+	else if (this.grpAlerts.currentState != "details")
 		this.grpAlerts.y = this.grpAlerts.alertY;
-	//trace(event.afterOrientation + " - " + event.beforeOrientation);
-	//trace(this.currentState + " - " + grpTo.height + " == " + grpTo.y + " - " + this.stage.stageHeight);
-	//trace("[w/h]" + this.width + "/" + this.height);
-	//forceLargeViewSizes();
 }
 
+/**
+ * 	Handles logic for station selects
+ */
 private function stationSelected(station:StationVO, direction:Number):void
 {
 	//trace("Station Selecting: " + station + " - " + direction);
@@ -379,29 +378,45 @@ private function stationSelected(station:StationVO, direction:Number):void
 		
 		if (!twitterUtil)
 			twitterUtil = new CaltrainTwitterUtil();
+		var xbound:int = (selectedStationFrom.stopLat < selectedStationTo.stopLat) ? 1 : -1;
+		if (twitterUtil.currentDirection != xbound)
+			removeAlerts();
+			
+		twitterUtil.currentDirection = xbound;
 		twitterUtil.findTweetsForTrains(this.grpTrainSchedule.trainTimes, alertCallback);
 	}
 	else
 	{
-		this.grpAlerts.removeAlerts();
 		this.grpTrainSchedule.currentState = "default";
 		this.grpTrainSchedule.lstTimes.dataProvider = null;
 	}
 }
 
-private function alertCallback():void
+/**
+ * 	Remove alert box and train alert highlights
+ */
+private function removeAlerts():void
 {
-	this.grpAlerts.setAlerts(twitterUtil.todaysFilteredTweets);
-	this.grpAlerts.setMessage("Tweets found for selected trains.");
+	this.grpTrainSchedule.clearAlertTrains();
+	this.grpAlerts.removeAlerts();
 }
 
+/**
+ * 	Handle showing messages for the trains that are between the two stations.
+ */
+private function alertCallback(trainAlertMatches:Array):void
+{
+	// TODO go through list and set trains to
+	this.grpTrainSchedule.setAlertTrains(trainAlertMatches);
+	this.grpAlerts.setAlerts(twitterUtil.todaysFilteredTweets);
+	this.grpAlerts.setMessage("Tweets found for " + trainAlertMatches.length + " train"+((trainAlertMatches.length>1) ? "s" : "")+".");
+}
+
+/**
+ * 	When train schedule view changes we want to hide/show stations.
+ */
 private function currentStateChangeHandler(event:StateChangeEvent):void
 {
-	if (this.currentState == "largeView")
-	{
-		forceLargeViewSizes();
-		return;
-	}
 	if (event.newState == "details")
 	{
 		setSelector("details");
@@ -413,6 +428,9 @@ private function currentStateChangeHandler(event:StateChangeEvent):void
 	}
 }
 
+/**
+ * 	Turn on/off GPS logic.
+ */
 private function findNearestStation():void
 {
 	if (!timer)
@@ -442,8 +460,6 @@ private function findNearestStation():void
 			geo = new Geolocation(); 
 			if(!geo.muted || Capabilities.manufacturer.indexOf("iOS"))
 			{ 
-				//this.output.text += "started GPS " + getTimer();
-				//geo.setRequestedUpdateInterval(60000); 
 				//Register to receive location updates. 
 				geo.addEventListener(GeolocationEvent.UPDATE, geolocationUpdateHandler); 
 				geo.addEventListener(StatusEvent.STATUS, statusGPSHandler);
@@ -452,42 +468,52 @@ private function findNearestStation():void
 			{
 				this.grpAlerts.setMessage("Please enable location services.", true);
 				findNearestStation(); // turn off
-				//this.output.text += "GPS muted\n";
 			}
 		}
 		else
 		{
 			this.grpAlerts.setMessage("Location services not supported.", true);
 			findNearestStation(); // turn off
-			
 		}
 	}
 }
 
-
+/**
+ * 	GPS Animating the icon and timeout check.
+ */
 private function timerTickHandler(event:TimerEvent):void
 {
 	this.imgGPS2.visible = !this.imgGPS2.visible;
-}
-
-private function statusGPSHandler(event:StatusEvent):void
-{
-	if (event.code == "Geolocation.Muted")
-	{
-		this.grpAlerts.setMessage("Please enable location services..", true);		
+	if ((event.target as Timer).currentCount == 20)
+	{		
+		this.grpAlerts.setMessage("Location services taking too long, check gps settings.", true);		
 		findNearestStation(); // turn off
 	}
 }
 
+/**
+ * 	Check to see if it gets muted while checking.
+ */
+private function statusGPSHandler(event:StatusEvent):void
+{
+	if (event.code == "Geolocation.Muted")
+	{
+		this.grpAlerts.setMessage("Please enable location services.", true);		
+		findNearestStation(); // turn off
+	}
+}
+
+/**
+ * 	Handle the GPS location data.
+ */
 private function geolocationUpdateHandler(event:GeolocationEvent):void 
 { 
+	trace("geo: " + geoValueCount);
 	// Let it find a couple values to make sure its a fresh value
 	if (geoValueCount++ < 2)
 		return;
 	var lat:Number = event.latitude;
 	var lon:Number = event.longitude;
-	
-	
 	
 	var sql:String = "SELECT stop_id, name, stop_lon, stop_lat FROM stops";
 	var results:Array = processSQL(sql);
@@ -515,13 +541,14 @@ private function geolocationUpdateHandler(event:GeolocationEvent):void
 	
 	if (stopID > -1)
 	{
-		//this.grpAlerts.setAlerts(alerts);
-		//this.grpAlerts.setMessage("Found: ["+stopID+"] " + stopName + " - " + lat.toPrecision(3) + "/" + lon.toPrecision(3));
 		this.grpStations.lstStations.setStation(stopID, -1);
 		this.grpAlerts.setMessage("" + stopName + " is the closet station.", true);
 	}
 }
 
+/**
+ * 	Helper Time format function
+ */
 public static function formatTime(time:int, type:String = "hour"):String
 {
 	var hour:int = time / 60;
@@ -531,6 +558,9 @@ public static function formatTime(time:int, type:String = "hour"):String
 	return ((hour%12 == 0) ? "12" : (hour%12)) + ":" + ((minute < 10) ? "0" + minute : minute) + "" + ((hour < 12 || hour >= 24) ? "am" : "pm");
 }
 
+/**
+ * 	Swap feature when you double click on a station.
+ */
 private var isSwaping:Boolean = false;
 private function swapStations():void
 {
@@ -545,8 +575,9 @@ private function swapStations():void
 		this.grpStations.lstStations.setStation(toTmp.stopID, -1);
 	isSwaping = false;
 }
-
-private var lastStationType:String = "";
+/**
+ * 	Station boxes state logic
+ */
 private function setSelector(type:String, force:Boolean = false):void
 {
 	if (isSwaping)
@@ -560,7 +591,6 @@ private function setSelector(type:String, force:Boolean = false):void
 		this.grpFrom.currentState = "defaultText";
 		this.grpTo.currentState = "disabled";
 		this.grpStations.lstStations.currentSelector = -1;
-		//this.imgPointer.y = this.grpFrom.y + (this.grpFrom.height-this.imgPointer.height)/2; 
 	}
 	else if (type == "to" && (force || selectedStationTo == null))
 	{
@@ -568,7 +598,6 @@ private function setSelector(type:String, force:Boolean = false):void
 		this.grpFrom.currentState = "disabled";
 		this.grpTo.currentState = "defaultText";
 		this.grpStations.lstStations.currentSelector = 1;
-		//this.imgPointer.y = this.grpTo.y + (this.grpTo.height-this.imgPointer.height)/2; 
 	}
 	else if (type == "details")
 	{

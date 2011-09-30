@@ -64,7 +64,6 @@
 	<s:states>
 		<s:State name="default" />
 		<s:State name="stationsHidden" />
-		<s:State name="largeView" />
 	</s:states>
 	
 	<s:transitions>
@@ -101,7 +100,7 @@
 	</s:SkinnableContainer>
 	
 	<!-- GPS Make Hit Area Bigger -->
-	<s:BitmapImage id="imgGPS" 
+	<s:BitmapImage id="imgGPS" visible="{CaltrainTimes.hasGPS}"
 					y="{(grpHeader.height-imgGPS.height)/2}"
 					right="{(grpHeader.height/3)}">
 		<s:source>
@@ -120,18 +119,17 @@
 		</s:source>
 	</s:BitmapImage>
 	<s:SkinnableContainer id="GPSHitArea" height="{grpHeader.height}" width="{grpHeader.height}" backgroundAlpha="0"
-						  click="grpInstructions.visible = false;findNearestStation()"
+						  click="grpInstructions.visible = false;findNearestStation()" visible="{CaltrainTimes.hasGPS}"
 						  right="{(grpHeader.height/3)-((grpHeader.height-imgGPS.height)/2)}" />
 	
 	<!-- Station Selector -->
 	<components:StationSelector id="grpStations" width="100%" x.stationsHidden="{-grpFrom.width}"
-								alpha.stationsHidden="0" alpha="1"  mouseEnabled="false" width.largeView="{largeViewWidth}"
+								alpha.stationsHidden="0" alpha="1"  mouseEnabled="false"
 				top="{grpFrom.y + grpFrom.height}" bottom="{grpTo.height}"
 				stationSelect="stationSelected(event.station, event.direction)" /> 
 	
 	<components:TrainSchedule id="grpTrainSchedule" width="{grpStations.width}" mouseEnabled="false"							  
-				top="{grpFrom.y + grpFrom.height}" bottom="{grpFrom.height}"
-				width.largeView="{width - largeViewWidth}" x.largeView="{grpStations.width}" />
+				top="{grpFrom.y + grpFrom.height}" bottom="{grpFrom.height}" />
 	
 	<!-- Results -->
 	
