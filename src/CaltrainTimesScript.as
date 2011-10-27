@@ -376,8 +376,10 @@ protected function resizeHandler(event:StageOrientationEvent):void
 {
 	if (this.grpAlerts.currentState == "details")
 		this.grpAlerts.y = this.grpAlerts.detailsY;
-	else if (this.grpAlerts.currentState != "details")
+	else if (this.grpAlerts.currentState == "alert")
 		this.grpAlerts.y = this.grpAlerts.alertY;
+	else
+		this.grpAlerts.y = this.grpAlerts.alertY+ this.grpAlerts.alertBoxHeight;
 }
 
 /**

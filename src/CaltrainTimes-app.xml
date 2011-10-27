@@ -4,7 +4,7 @@
 	<id>com.renaun.CaltrainTimes</id>
 	<filename>CaltrainTimes</filename>
 	<name>Caltrain Times</name>
-	<versionNumber>1.0.42</versionNumber>
+	<versionNumber>1.1.0</versionNumber>
 	<description>Caltrain Times provides train times between the Caltrain stations.</description>
 	<initialWindow>
 		<content>[This value will be overwritten by Flash Builder in the output app.xml]</content>
