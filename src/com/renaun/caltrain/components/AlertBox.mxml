@@ -2,6 +2,7 @@
 <s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
 					  xmlns:s="library://ns.adobe.com/flex/spark"
 					  width="100%" gap="0"
+					  y.hidden="{alertY+alertBoxHeight}"
 					  y.alert="{alertY+1}"
 					  y.details="{detailsY}">
 	<fx:Script>
@@ -21,6 +22,7 @@
 			
 			public function setMessage(msg:String, fade:Boolean = false):void
 			{
+				//trace("AB::setMessage: " + msg);
 				lblMessage.text = msg;
 				currentState = "alert";
 				isFading = fade;
@@ -43,6 +45,7 @@
 			
 			public function removeAlerts():void
 			{
+				//trace("AB::removeAlerts");
 				currentState = "hidden";
 			}
 			
@@ -65,16 +68,16 @@
 		</s:Transition>	
 	</s:transitions>
 		
-	<s:SkinnableContainer id="grpHorz" styleName="blackBox" width="100%" height="{alertBoxHeight}">
+	<s:SkinnableContainer id="grpHorz" styleName="blackBox" width="100%" height="{alertBoxHeight}"
+						  click="currentState = (currentState == 'alert') ? 'details' : 'alert'">
 		<s:layout>
 			<s:HorizontalLayout id="lH" />
 		</s:layout>
-		<s:Label text="Alert:" styleName="alertHeader" />
+		<s:Label id="lblAlert" text="Alert:" styleName="alertHeader" />
 		<s:Label id="lblMessage" text="" styleName="alertText2" width="100%" />
 		
 		<s:Group id="OPHitArea" height="100%" width="{alertBoxHeight}"
 				 visible="{!isFading}"
-				 click="currentState = (currentState == 'alert') ? 'details' : 'alert'"
 				 >
 			<s:ToggleButton id="btnOpenClose" selected="{currentState == 'details'}" verticalCenter="{-btnOpenClose.height/8}" right="0"
 							skinClass="com.renaun.caltrain.skins.OpenCloseButtonSkin" />

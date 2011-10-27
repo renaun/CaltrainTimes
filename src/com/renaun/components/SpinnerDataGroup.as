@@ -170,6 +170,9 @@ public class SpinnerDataGroup extends SkinnableDataContainer
 	override protected function createChildren():void
 	{
 		super.createChildren();
+		
+		if (dataGroup)
+			dataGroup.layout.useVirtualLayout = false;
 	}
 	
 	/**
@@ -221,10 +224,25 @@ public class SpinnerDataGroup extends SkinnableDataContainer
 		processInteraction(newIndex, direction);
 	}
 	
+	public function updateLocalization():void
+	{
+		trace("lastSelectedLeftIndex: " + lastSelectedLeftIndex + " - " + lastSelectedRightIndex);
+		var otherRenderer:StationRendererAS = dataGroup.getElementAt(lastSelectedLeftIndex) as StationRendererAS;
+		if (otherRenderer)
+		{
+			otherRenderer.showTimes = otherRenderer.showTimes;
+		}
+		otherRenderer = dataGroup.getElementAt(lastSelectedRightIndex) as StationRendererAS;
+		if (otherRenderer)
+		{
+			otherRenderer.showTimes = otherRenderer.showTimes;
+		}
+	}
+	
 	/**
 	 * 	Set a station
 	 */
-	public function setStation(stopID:int, direction:int):void
+	public function setStation(stopID:int, direction:int, force:Boolean = false):void
 	{
 		var newIndex:int = -1;
 		var stationVO:StationVO;
@@ -242,7 +260,8 @@ public class SpinnerDataGroup extends SkinnableDataContainer
 				break;
 			}
 		}
-		if (newIndex > -1 && newIndex != lastSelectedLeftIndex)
+		//trace("sS: " + stopID + " dd: " + newIndex + " - " + lastSelectedLeftIndex);
+		if (newIndex > -1 && (newIndex != lastSelectedLeftIndex || force))
 			processInteraction(newIndex, direction);
 	}
 	

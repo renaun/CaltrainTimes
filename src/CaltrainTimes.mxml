@@ -15,8 +15,6 @@
 	<fx:Script source="CaltrainTimesScript.as" />
 
 	<fx:Declarations>
-		<s:Power id="powerEasing"
-				 exponent="4"/>
 		
 		<s:DropShadowFilter id="subtleDropShadow" blurX="2" blurY="2" distance="2" alpha="0.8" />
 		
@@ -59,21 +57,14 @@
 				source240dpi="{CaltrainTimes.BlackBoxDPI320}"
 				source320dpi="{CaltrainTimes.BlackBoxDPI320}"/>
 		
+		<s:Move id="moveGrpStations" targets="{grpStations}" duration="400" />	
+		<s:Fade id="fadeGrpStations" target="{grpStations}" duration="400" />
 	</fx:Declarations>
 	
 	<s:states>
 		<s:State name="default" />
 		<s:State name="stationsHidden" />
 	</s:states>
-	
-	<s:transitions>
-		<s:Transition autoReverse="true">
-			<s:Parallel>
-				<s:Move id="upDown" targets="{grpStations}" duration="400" />	
-				<s:Fade target="{grpStations}" duration="400" />
-			</s:Parallel>
-		</s:Transition>
-	</s:transitions>
 	
 	<s:BitmapImage id="imgBackground" width="100%" top="{grpFrom.y + grpFrom.height}" bottom="{grpTo.height}">
 		<s:source>
@@ -123,26 +114,25 @@
 						  right="{(grpHeader.height/3)-((grpHeader.height-imgGPS.height)/2)}" />
 	
 	<!-- Station Selector -->
-	<components:StationSelector id="grpStations" width="100%" x.stationsHidden="{-grpFrom.width}"
-								alpha.stationsHidden="0" alpha="1"  mouseEnabled="false"
+	<components:StationSelector id="grpStations" width="100%" x="0" alpha="1" mouseEnabled="false"
 				top="{grpFrom.y + grpFrom.height}" bottom="{grpTo.height}"
 				stationSelect="stationSelected(event.station, event.direction)" /> 
 	
-	<components:TrainSchedule id="grpTrainSchedule" width="{grpStations.width}" mouseEnabled="false"							  
+	<components:TrainSchedule id="grpTrainSchedule" width="{grpStations.width}"							  
 				top="{grpFrom.y + grpFrom.height}" bottom="{grpFrom.height}" />
 	
 	<!-- Results -->
 	
 	<!-- BlackBoxed Sections (From, To, Alerts) -->
 	<components:StationBlackBox id="grpFrom" y="{grpHeader.height}" width="100%" styleName="blackBox"
-								prefix="From:" click="setSelector('from', true)" doubleClick="swapStations()"
+								prefix="From:" click="setSelector('from', true);event.stopPropagation();"
 								/>
 	
 	<components:AlertBox id="grpAlerts" alertY="{grpTo.y-grpTo.height}" alertBoxHeight="{grpTo.height}"
 						 detailsY="{grpFrom.y + grpFrom.height}" y="{height}" height="{grpTrainSchedule.height}" />
 	
 	<components:StationBlackBox id="grpTo" bottom="0" width="100%" styleName="blackBox"
-						  prefix="To:" click="setSelector('to', true)" doubleClick="swapStations()"
+						  prefix="To:" click="setSelector('to', true);event.stopPropagation();"
 						  />
 	<components:InstructionView id="grpInstructions" top="{grpFrom.y}" bottom="0" visible="false" />
 	<!--<s:TextArea id="output" bottom="0" height="300" width="100%" editable="false" color="0x000000" />-->

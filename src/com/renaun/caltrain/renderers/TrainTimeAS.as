@@ -1,5 +1,6 @@
 package com.renaun.caltrain.renderers
 {
+	import com.renaun.caltrain.model.CaltrainStrings;
 	import com.renaun.caltrain.vo.TimesVO;
 	
 	import flash.display.GradientType;
@@ -38,7 +39,7 @@ package com.renaun.caltrain.renderers
 		public function TrainTimeAS()
 		{
 			super();
-			styleName = "results";
+			styleName = "resultsChinese";
 			switch (applicationDPI)
 			{
 				case DPIClassification.DPI_160:
@@ -72,6 +73,7 @@ package com.renaun.caltrain.renderers
 		private var mask2:Group;
 		
 		private var drawAlert:Boolean = false;
+		private var lastLocale:String;
 		
 		/**
 		 * @private
@@ -87,6 +89,15 @@ package com.renaun.caltrain.renderers
 				return;
 			
 			var item:TimesVO = value as TimesVO;
+			
+			if (lastLocale != CaltrainStrings.currentLocale)
+			{
+				if (CaltrainStrings.currentLocale == CaltrainStrings.LOCALE_CHINESE)
+					styleName = "resultsChinese";
+				else
+					styleName = "results";
+				lastLocale = CaltrainStrings.currentLocale;
+			}
 			
 			drawAlert = item.hasAlert;
 			

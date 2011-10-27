@@ -1,5 +1,6 @@
 package com.renaun.caltrain.renderers
 {
+import com.renaun.caltrain.model.CaltrainStrings;
 import com.renaun.caltrain.vo.StationVO;
 
 import flash.filters.DropShadowFilter;
@@ -113,6 +114,7 @@ public class StationRendererAS extends LabelItemRenderer
 	private var resultsSouthBGColor:uint;
 	
 	public var direction:int = 0;
+	private var lastLocale:String = "";
 	
 	private var _showTimes:Boolean = false;
 	public function get showTimes():Boolean
@@ -123,6 +125,26 @@ public class StationRendererAS extends LabelItemRenderer
 	public function set showTimes(value:Boolean):void
 	{
 		_showTimes = value;
+		//trace(lastLocale + " - " + CaltrainStrings.currentLocale);
+		if (lastLocale != CaltrainStrings.currentLocale)
+		{
+			//trace("Setting styleDeclaration");
+			
+			resultsSouth.styleChanged(null);
+			resultsNorth.styleChanged(null);
+			if (CaltrainStrings.currentLocale == CaltrainStrings.LOCALE_CHINESE)
+				resultsSouth.styleDeclaration = styleManager.getStyleDeclaration(".resultsQuickChinese");
+			else
+				resultsSouth.styleDeclaration = styleManager.getStyleDeclaration(".resultsQuick");
+			
+			if (CaltrainStrings.currentLocale == CaltrainStrings.LOCALE_CHINESE)
+				resultsNorth.styleDeclaration = styleManager.getStyleDeclaration(".resultsQuickChinese");
+			else
+				resultsNorth.styleDeclaration = styleManager.getStyleDeclaration(".resultsQuick");
+			lastLocale = CaltrainStrings.currentLocale;
+		}
+		if (!value)
+			lastLocale = "";
 		if (value)
 		{
 			
@@ -135,10 +157,15 @@ public class StationRendererAS extends LabelItemRenderer
 			var sql:String = "select stop_times.arrival_time, trips.route_id from stop_times, trips where stop_id="+stopID+" AND stop_times.trip_id=trips.trip_id AND trips.service_id="+serviceID+" AND arrival_time>"+cTime+" AND trips.direction=0 order by arrival_time limit 1";
 			var results:Array = FlexGlobals.topLevelApplication.processSQL(sql);
 			var routeID:int = 0;
+			var parts:Array;
 			if (results.length > 0)
 			{
 				routeID = results[0]["route_id"];
-				resultsNorth.text = "Next Northbound " + CaltrainTimes.formatTime(results[0]["arrival_time"]);
+				parts = CaltrainTimes.formatTimeParts(results[0]["arrival_time"]);
+				var strnn:String = CaltrainStrings.getString("next.northbound");;
+				strnn = strnn.replace("{1}", parts[0]);
+				strnn = strnn.replace("{2}", parts[1]);
+				resultsNorth.text = strnn;
 				if (routeID == 2)
 					c = 0xf0ff00;
 				else if (routeID == 4)
@@ -157,7 +184,11 @@ public class StationRendererAS extends LabelItemRenderer
 			if (results.length > 0)
 			{
 				routeID = results[0]["route_id"];
-				resultsSouth.text = "Next Southbound " + CaltrainTimes.formatTime(results[0]["arrival_time"]);
+				parts = CaltrainTimes.formatTimeParts(results[0]["arrival_time"]);
+				var strns:String = CaltrainStrings.getString("next.southbound");
+				strns = strns.replace("{1}", parts[0]);
+				strns = strns.replace("{2}", parts[1]);
+				resultsSouth.text = strns;
 				if (routeID == 2)
 					c = 0xf0ff00;
 				else if (routeID == 4)
@@ -209,10 +240,10 @@ public class StationRendererAS extends LabelItemRenderer
 		circleBitmap.source = (!value) ? circle1 : ((direction < 0) ? circle2 : circle3);
 		
 		lblStation.styleChanged(null);
-		lblStation.styleDeclaration = styleManager.getStyleDeclaration("."+((!value) ? "stationText1" : "stationText2"));
-			
+		lblStation.styleDeclaration = 
+			styleManager.getStyleDeclaration("."+((!value) ? "stationText1" : "stationText2"));
 		lblStation.commitStyles();
-
+	
 		xCircle = (!value) ? xCircle1 : xCircle2;
 		xLabel = (!value) ? xLabelStart : xLabelStart + (xCircle1-xCircle2);
 		
@@ -274,24 +305,32 @@ public class StationRendererAS extends LabelItemRenderer
 			addChild(quickResultsGraphic);
 			quickResultsGraphic.filters = [subtleDropShadow];
 		}
+		
 		if (!lblStation)
 		{
 			lblStation = createLabelDisplay2();
 			lblStation.styleDeclaration = styleManager.getStyleDeclaration(".stationText1");
 			lblStation.filters = [subtleDropShadow];
 		}
+		
 		if (!resultsNorth)
 		{
 			resultsNorth = createLabelDisplay2();
 			resultsNorth.alpha = 0;
-			resultsNorth.styleDeclaration = styleManager.getStyleDeclaration(".resultsQuick");
+			if (CaltrainStrings.currentLocale == CaltrainStrings.LOCALE_CHINESE)
+				resultsNorth.styleDeclaration = styleManager.getStyleDeclaration(".resultsQuickChinese");
+			else
+				resultsNorth.styleDeclaration = styleManager.getStyleDeclaration(".resultsQuick");
 			resultsNorth.filters = [subtleDropShadow];
 		}
 		if (!resultsSouth)
 		{
 			resultsSouth = createLabelDisplay2();
 			resultsSouth.alpha = 0;
-			resultsSouth.styleDeclaration = styleManager.getStyleDeclaration(".resultsQuick");
+			if (CaltrainStrings.currentLocale == CaltrainStrings.LOCALE_CHINESE)
+				resultsSouth.styleDeclaration = styleManager.getStyleDeclaration(".resultsQuickChinese");
+			else
+				resultsSouth.styleDeclaration = styleManager.getStyleDeclaration(".resultsQuick");
 			resultsSouth.filters = [subtleDropShadow];
 		}
 		
@@ -302,7 +341,6 @@ public class StationRendererAS extends LabelItemRenderer
 	protected function createLabelDisplay2():StyleableTextField
 	{
 		var lbl:StyleableTextField = StyleableTextField(createInFontContext(StyleableTextField));
-		//lbl.styleName = this;
 		lbl.editable = false;
 		lbl.selectable = false;
 		lbl.multiline = false;

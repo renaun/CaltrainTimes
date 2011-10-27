@@ -1,3 +1,4 @@
+import com.renaun.caltrain.model.CaltrainStrings;
 import com.renaun.caltrain.vo.StationVO;
 import com.renaun.utils.CaltrainTwitterUtil;
 import com.renaun.utils.LocationUtil;
@@ -10,8 +11,10 @@ import flash.events.KeyboardEvent;
 import flash.events.StageOrientationEvent;
 import flash.events.StatusEvent;
 import flash.events.TimerEvent;
+import flash.events.TransformGestureEvent;
 import flash.filesystem.File;
 import flash.geom.Point;
+import flash.net.SharedObject;
 import flash.sensors.Geolocation;
 import flash.system.Capabilities;
 import flash.text.Font;
@@ -147,6 +150,16 @@ private var timer:Timer;// = new Timer(300);
 private var geoValueCount:int = 0;
 private var rotDelta:Number = 0.06;
 
+/**
+ *  Localization
+ */
+private var strGPSDisabled:String = "Please enable location services.";
+private var strGPSNotSupported:String = "Location services not supported.";
+private var strGPSTimeout:String = "Location services taking too long, check gps settings.";
+private var strGPSMatch:String = "{1} is the closest station.";
+private var strTrainAlerts:String = "Tweets found for {1} train{.";
+private var strTrainAlerts2:String = "Tweets found for {1} trains.";
+
 [Bindable]
 public static var hasGPS:Boolean = true;
 
@@ -168,6 +181,22 @@ public static var todaysServiceID:int = 2;
  */
 protected function init():void
 {	
+	//trace(Capabilities.screenDPI + " - " + Capabilities.serverString);
+	// TODO save the local setting and remember it here
+	var obj:SharedObject = SharedObject.getLocal("localeCaltrainTimes");
+	if (obj.data && obj.data.locale != null)
+	{
+		setLocaleStrings(obj.data.locale + "");
+	}
+	else
+	{
+		obj.data.locale = CaltrainStrings.LOCALE_ENGLISH;
+		obj.flush();
+		setLocaleStrings(CaltrainStrings.LOCALE_ENGLISH);
+	}
+	//setLocaleStrings("en_US");
+	
+	
 	// Include Font classes to be uncommented if you do not have the fonts
 	// you'll need to change styles.css to styles_fonts_in_swc.css
 	/*
@@ -356,6 +385,10 @@ protected function resizeHandler(event:StageOrientationEvent):void
  */
 private function stationSelected(station:StationVO, direction:Number):void
 {
+	if (isSwaping && station == null)
+	{
+		return;	
+	}
 	//trace("Station Selecting: " + station + " - " + direction);
 	if (direction < 0)
 	{
@@ -373,8 +406,9 @@ private function stationSelected(station:StationVO, direction:Number):void
 	
 	if (hasBothStations)
 	{
-		this.grpTrainSchedule.setStations(selectedStationFrom, selectedStationTo);
-		this.grpTrainSchedule.currentState = "times";
+		this.grpTrainSchedule.setStations(selectedStationFrom, selectedStationTo, isSwaping);
+		if (!isSwaping)
+			this.grpTrainSchedule.currentState = "times";
 		
 		if (!twitterUtil)
 			twitterUtil = new CaltrainTwitterUtil();
@@ -387,6 +421,7 @@ private function stationSelected(station:StationVO, direction:Number):void
 	}
 	else
 	{
+		removeAlerts();
 		this.grpTrainSchedule.currentState = "default";
 		this.grpTrainSchedule.lstTimes.dataProvider = null;
 	}
@@ -409,7 +444,14 @@ private function alertCallback(trainAlertMatches:Array):void
 	// TODO go through list and set trains to
 	this.grpTrainSchedule.setAlertTrains(trainAlertMatches);
 	this.grpAlerts.setAlerts(twitterUtil.todaysFilteredTweets);
-	this.grpAlerts.setMessage("Tweets found for " + trainAlertMatches.length + " train"+((trainAlertMatches.length>1) ? "s" : "")+".");
+	var str:String;
+	if (trainAlertMatches.length > 1)
+		str = strTrainAlerts2.replace("{1}", trainAlertMatches.length);
+	else if (trainAlertMatches.length > 0)
+		str = strTrainAlerts.replace("{1}", trainAlertMatches.length);
+	//trace("alertCallback: " + str);
+	this.grpAlerts.setMessage(str);
+
 }
 
 /**
@@ -417,13 +459,32 @@ private function alertCallback(trainAlertMatches:Array):void
  */
 private function currentStateChangeHandler(event:StateChangeEvent):void
 {
+	trace("cSC: " + event.newState + " - " + event.oldState);
 	if (event.newState == "details")
 	{
+		if (!isSwaping)
+		{
+			moveGrpStations.xFrom = grpStations.x;
+			moveGrpStations.xTo = -grpFrom.width;
+			moveGrpStations.play();
+			fadeGrpStations.alphaFrom = 1;
+			fadeGrpStations.alphaTo = 0;
+			fadeGrpStations.play();
+		}
 		setSelector("details");
 		this.currentState = "stationsHidden";
 	}
 	else
 	{
+		if (event.newState == "times" && event.oldState == "details" && !isSwaping)
+		{
+			moveGrpStations.xFrom = -grpFrom.width;
+			moveGrpStations.xTo = 0;
+			moveGrpStations.play();
+			fadeGrpStations.alphaFrom = 0;
+			fadeGrpStations.alphaTo = 1;
+			fadeGrpStations.play();
+		}
 		this.currentState = "default";
 	}
 }
@@ -466,13 +527,13 @@ private function findNearestStation():void
 			} 
 			else
 			{
-				this.grpAlerts.setMessage("Please enable location services.", true);
+				this.grpAlerts.setMessage(strGPSDisabled, true);
 				findNearestStation(); // turn off
 			}
 		}
 		else
 		{
-			this.grpAlerts.setMessage("Location services not supported.", true);
+			this.grpAlerts.setMessage(strGPSNotSupported, true);
 			findNearestStation(); // turn off
 		}
 	}
@@ -484,9 +545,9 @@ private function findNearestStation():void
 private function timerTickHandler(event:TimerEvent):void
 {
 	this.imgGPS2.visible = !this.imgGPS2.visible;
-	if ((event.target as Timer).currentCount == 20)
+	if ((event.target as Timer).currentCount == 30)
 	{		
-		this.grpAlerts.setMessage("Location services taking too long, check gps settings.", true);		
+		this.grpAlerts.setMessage(strGPSTimeout, true);		
 		findNearestStation(); // turn off
 	}
 }
@@ -498,7 +559,7 @@ private function statusGPSHandler(event:StatusEvent):void
 {
 	if (event.code == "Geolocation.Muted")
 	{
-		this.grpAlerts.setMessage("Please enable location services.", true);		
+		this.grpAlerts.setMessage(strGPSDisabled, true);		
 		findNearestStation(); // turn off
 	}
 }
@@ -542,7 +603,7 @@ private function geolocationUpdateHandler(event:GeolocationEvent):void
 	if (stopID > -1)
 	{
 		this.grpStations.lstStations.setStation(stopID, -1);
-		this.grpAlerts.setMessage("" + stopName + " is the closet station.", true);
+		this.grpAlerts.setMessage(strGPSMatch.replace("{1}", stopName) , true);
 	}
 }
 
@@ -551,28 +612,59 @@ private function geolocationUpdateHandler(event:GeolocationEvent):void
  */
 public static function formatTime(time:int, type:String = "hour"):String
 {
+	var parts:Array = formatTimeParts(time, type);
+	if (type == "mins")
+	{
+		return parts[0] + parts[1] + " " + parts[2] + " " + parts[3];
+	}
+	else
+	{
+		if (CaltrainStrings.currentLocale == CaltrainStrings.LOCALE_CHINESE)
+			return parts[1] + parts[0]+"";
+		else
+			return parts[0] + parts[1]+"";	
+	}
+}
+
+public static function formatTimeParts(time:int, type:String = "hour"):Array
+{
+	var parts:Array = [];
 	var hour:int = time / 60;
 	var minute:int = time % 60;
 	if (type == "mins")
-		return ((hour > 0) ? (hour) + "hr" + ((hour>1) ? "s" : "") + " " : "") + minute + "mins"
-	return ((hour%12 == 0) ? "12" : (hour%12)) + ":" + ((minute < 10) ? "0" + minute : minute) + "" + ((hour < 12 || hour >= 24) ? "am" : "pm");
+	{
+		parts[0] = (hour > 0) ? hour+"" : "";
+		parts[1] = "";
+		if (parts[0] != "")
+			parts[1] = (hour>1) ? CaltrainStrings.getString("hours.plural") : CaltrainStrings.getString("hours.single");
+		parts[2] = minute;
+		parts[3] = CaltrainStrings.getString("minutes");
+		return parts;
+	}
+	else
+	{
+		parts[0] = ((hour%12 == 0) ? "12" : (hour%12)) + ":" + ((minute < 10) ? "0" + minute : minute);
+		parts[1] = ((hour < 12 || hour >= 24) ? CaltrainStrings.getString("time.am") : CaltrainStrings.getString("time.pm"));
+		return parts; ;
+	}
 }
 
 /**
  * 	Swap feature when you double click on a station.
  */
-private var isSwaping:Boolean = false;
-private function swapStations():void
+public var isSwaping:Boolean = false;
+public function swapStations():void
 {
 	var fromTmp:StationVO = selectedStationFrom;
 	var toTmp:StationVO = selectedStationTo;
+	isSwaping = true;
 //	stationSelected(null, -1);
 //	stationSelected(null, 1);
-	isSwaping = true;
+//trace(fromTmp.stopID + " - " + toTmp.stopID);
 	if (fromTmp)
-		this.grpStations.lstStations.setStation(fromTmp.stopID, 1);
+		this.grpStations.lstStations.setStation(fromTmp.stopID, 1, true);
 	if (toTmp)
-		this.grpStations.lstStations.setStation(toTmp.stopID, -1);
+		this.grpStations.lstStations.setStation(toTmp.stopID, -1, true);
 	isSwaping = false;
 }
 /**
@@ -604,4 +696,115 @@ private function setSelector(type:String, force:Boolean = false):void
 		this.grpFrom.currentState = "active";
 		this.grpTo.currentState = "active";
 	}
+}
+public function setLocaleStrings(locale:String, runtime:Boolean = false):void
+{
+	CaltrainStrings.loadStrings(locale);
+	var obj:SharedObject = SharedObject.getLocal("localeCaltrainTimes");
+	if (obj.data)
+	{
+		obj.data.locale = locale;
+		obj.flush();
+	}
+	// Set all Strings - choose to do direct instead of use binding
+	//lblHeaderText.text = CaltrainStrings.getString("titlePart1");
+	//lblHeaderText2.text = CaltrainStrings.getString("titlePart2");
+	
+	// TODO add rest of sstyle change sot Edit, TrainSchedule headers, alerts
+	if (CaltrainStrings.currentLocale == CaltrainStrings.LOCALE_CHINESE)
+	{
+		grpFrom.lblPrefix.styleName = "text1Chinese";
+		grpFrom.lblEdit.styleName = "editTextChinese";
+		grpFrom.lblStation.styleName = "text2Chinese";
+		if (selectedStationFrom)
+			grpFrom.setStation(selectedStationFrom);
+		grpTo.lblPrefix.styleName = "text1Chinese";
+		grpTo.lblEdit.styleName = "editTextChinese";
+		grpTo.lblStation.styleName = "text2Chinese";
+		if (selectedStationTo)
+			grpTo.setStation(selectedStationTo);
+		grpInstructions.lblTitle.styleName = "text1Chinese";
+		grpInstructions.lblHelp1.styleName = "alertText2Chinese";
+		grpInstructions.lblHelp2.styleName = "alertText2Chinese";
+		grpInstructions.lblHelp3.styleName = "alertText2Chinese";
+		grpInstructions.lblHelp4.styleName = "alertText2Chinese";
+		grpInstructions.lblHelp5.styleName = "alertText2Chinese";
+		grpInstructions.lblHelp6.styleName = "alertText2Chinese";
+		grpInstructions.lblFind.styleName = "text2Chinese";
+	}
+	else if (CaltrainStrings.currentLocale == CaltrainStrings.LOCALE_SPANISH)
+	{
+		grpFrom.lblPrefix.styleName = "text1Spanish";
+		grpFrom.lblEdit.styleName = "editText";
+		grpFrom.lblStation.styleName = "text2Spanish";
+		grpTo.lblPrefix.styleName = "text1Spanish";
+		grpTo.lblEdit.styleName = "editText";
+		grpTo.lblStation.styleName = "text2Spanish";
+		grpInstructions.lblTitle.styleName = "text1Spanish";
+		grpInstructions.lblHelp1.styleName = "alertText2";
+		grpInstructions.lblHelp2.styleName = "alertText2";
+		grpInstructions.lblHelp3.styleName = "alertText2";
+		grpInstructions.lblHelp4.styleName = "alertText2";
+		grpInstructions.lblHelp5.styleName = "alertText2";
+		grpInstructions.lblHelp6.styleName = "alertText2";
+		grpInstructions.lblFind.styleName = "text2Spanish";
+	}
+	else
+	{
+		grpFrom.lblPrefix.styleName = "text1";
+		grpFrom.lblEdit.styleName = "editText";
+		grpFrom.lblStation.styleName = "text2";
+		grpTo.lblPrefix.styleName = "text1";
+		grpTo.lblEdit.styleName = "editText";
+		grpTo.lblStation.styleName = "text2";
+		grpInstructions.lblTitle.styleName = "text1";
+		grpInstructions.lblHelp1.styleName = "alertText2";
+		grpInstructions.lblHelp2.styleName = "alertText2";
+		grpInstructions.lblHelp3.styleName = "alertText2";
+		grpInstructions.lblHelp4.styleName = "alertText2";
+		grpInstructions.lblHelp5.styleName = "alertText2";
+		grpInstructions.lblHelp6.styleName = "alertText2";
+		grpInstructions.lblFind.styleName = "text2";
+	}
+	
+	grpTrainSchedule.lbl1.text = CaltrainStrings.getString("departs");
+	grpTrainSchedule.lbl2.text = CaltrainStrings.getString("arrives");
+	grpTrainSchedule.lbl3.text = CaltrainStrings.getString("duration");
+	grpTrainSchedule.lbl4.text = CaltrainStrings.getString("trainNumber");
+	grpTrainSchedule.lbl5.text = CaltrainStrings.getString("fare");
+	grpTrainSchedule.btnDays.label = CaltrainStrings.getString("weekday");
+	grpTrainSchedule.btnEnds.label = CaltrainStrings.getString("weekend");
+	if (runtime)
+		grpTrainSchedule.getTimes(true, (grpTrainSchedule.btnEnds.selected) ? 2 : 3);
+	
+	grpFrom.setDefaultStationValue(CaltrainStrings.getString("selectStation"));
+	grpFrom.setTranslatedPrefix(CaltrainStrings.getString("fromStationPrefix"), CaltrainStrings.getString("toStationPrefix"));
+	grpFrom.lblEdit.text = CaltrainStrings.getString("edit");
+	grpTo.setDefaultStationValue(CaltrainStrings.getString("selectStation"));
+	grpTo.setTranslatedPrefix(CaltrainStrings.getString("fromStationPrefix"), CaltrainStrings.getString("toStationPrefix"));
+	grpTo.lblEdit.text = CaltrainStrings.getString("edit");
+	
+	
+	strGPSDisabled = CaltrainStrings.getString("gps.disabled");
+	strGPSNotSupported = CaltrainStrings.getString("gps.notsupported");
+	strGPSTimeout = CaltrainStrings.getString("gps.timeout");
+	strGPSMatch = CaltrainStrings.getString("gps.match");
+	
+	strTrainAlerts = CaltrainStrings.getString("trainAlerts.singular");
+	strTrainAlerts2 = CaltrainStrings.getString("trainAlerts.plural");
+	
+	grpAlerts.lblAlert.text = CaltrainStrings.getString("alertPrefix");
+	
+	grpInstructions.lblTitle.text = CaltrainStrings.getString("info.title");
+	grpInstructions.lblHelp1.text = CaltrainStrings.getString("info.help1");
+	grpInstructions.lblHelp2.text = CaltrainStrings.getString("info.help2");
+	grpInstructions.lblHelp3.text = CaltrainStrings.getString("info.help3");
+	grpInstructions.lblHelp4.text = CaltrainStrings.getString("info.help4");
+	grpInstructions.lblHelp5.text = CaltrainStrings.getString("info.help5");
+	grpInstructions.lblHelp6.text = CaltrainStrings.getString("info.help6");
+	grpInstructions.lblFind.text = CaltrainStrings.getString("info.button");
+	
+	grpStations.lstStations.updateLocalization();
+	
+	
 }

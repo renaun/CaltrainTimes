@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
 		 xmlns:s="library://ns.adobe.com/flex/spark"
-		 doubleClickEnabled="true"
 		 creationComplete="setStationCircle()">
 	
 	<fx:Metadata>
@@ -10,13 +9,21 @@
 	
 	<fx:Script>
 		<![CDATA[			
+			import com.renaun.caltrain.model.CaltrainStrings;
 			import com.renaun.caltrain.vo.StationVO;
 			
 			import mx.core.FlexGlobals;
 			
+			private var isFromStation:Boolean = true;
+			private var prefixTranslated:Array = ["From:", "To:"];
+			public function setTranslatedPrefix(from:String, to:String):void
+			{
+				prefixTranslated = [from, to];
+				lblPrefix.text = (isFromStation) ? prefixTranslated[0] : prefixTranslated[1];
+			}
+			
 			private var _prefix:String = "From:";
 				
-			[Bindable]
 			public function get prefix():String
 			{
 				return _prefix;
@@ -26,24 +33,46 @@
 			{
 				_prefix = value;
 				if (value == "To:")
+				{
 					currentState = "disabled";
+					isFromStation = false;
+				}
 				setStation(null);
 			}
 			
+			private var defaultStationValue:String = " - Select Station -";
+			public function setDefaultStationValue(newValue:String):void
+			{
+				if (stationName == defaultStationValue)
+					stationName = newValue;
+				defaultStationValue = newValue;
+			}
+			
 			[Bindable]
-			private var stationName:String = " - Select Station -";
+			private var stationName:String = defaultStationValue;
 			//" - Select Your Destination -";
 
 			public function setStation(station:StationVO):void
 			{
 				if (!station)
-					stationName = (prefix == "From:") ? " - Select Station -" : " - Select Station -";
+				{
+					if (CaltrainStrings.currentLocale == CaltrainStrings.LOCALE_CHINESE)
+						lblStation.styleName = "text2Chinese";
+					stationName = defaultStationValue;
+				}
 				else
+				{
+					if (CaltrainStrings.currentLocale == CaltrainStrings.LOCALE_CHINESE)
+						lblStation.styleName = "text2";
 					stationName = station.name;
+				}
 			}
 			protected function setStationCircle():void
 			{
-				stationCircle.source = (prefix == "From:") ? FlexGlobals.topLevelApplication.circle2b : FlexGlobals.topLevelApplication.circle3b;
+				if (!lblPrefix)
+					lblPrefix.text = (isFromStation) ? prefixTranslated[0] : prefixTranslated[1];
+
+				stationCircle.source = (isFromStation) ? FlexGlobals.topLevelApplication.circle2b : FlexGlobals.topLevelApplication.circle3b;
 			}
 			
 		]]>
@@ -61,14 +90,14 @@
 	<s:BitmapImage id="stationCircle"
 				   alpha.disabled="0.3"  />
 	
-	<s:Label styleName="text1" text="{prefix}"
+	<s:Label id="lblPrefix" styleName="text1"
 			 alpha.disabled="0.3"
 			 verticalAlign="middle" />
-	<s:Label styleName="text2" text="{stationName}" width="100%"
+	<s:Label id="lblStation" styleName="text2" text="{stationName}" width="100%"
 			 alpha.disabled="0.3"
 			 verticalAlign="middle"/>
 	
-	<s:Group  visible="true" visible.active="true" visible.defaultText="false">
+	<s:Group visible="true" visible.active="true" visible.defaultText="false">
 		<s:BitmapImage verticalCenter="0">
 			<s:source>
 				<s:MultiDPIBitmapSource source160dpi="@Embed(source='/assets/dpi160/redbox_down.png')"
@@ -76,7 +105,7 @@
 										source320dpi="@Embed(source='/assets/dpi320/redbox_down.png')" />
 			</s:source>
 		</s:BitmapImage>
-		<s:Label verticalCenter="0" horizontalCenter="0" styleName="editText" text="EDIT" />
+		<s:Label id="lblEdit" verticalCenter="0" horizontalCenter="0" styleName="editText" text="EDIT" />
 	</s:Group>
 	
 </s:SkinnableContainer>

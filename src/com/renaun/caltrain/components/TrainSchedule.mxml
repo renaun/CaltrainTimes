@@ -4,16 +4,13 @@
 		  x="{filterPositionX(width,'default')}"
 		  x.times="{filterPositionX(width - (lbl1.x+lblGrp.x+lbl1.width), 'times')}"
 		  x.details="{filterPositionX(detailsX, 'details')}"
-		  click.times="currentState = (currentState == 'details') ? 'times' : 'details'"
+		  mouseDown="startMoving(event)" mouseUp="changeStates(event)"
 		  creationComplete="creationCompleteHandler()">
 	
 	<fx:Script>
 		<![CDATA[
 			import com.renaun.caltrain.vo.StationVO;
 			import com.renaun.caltrain.vo.TimesVO;
-			
-			import flash.net.dns.AAAARecord;
-			import flash.profiler.showRedrawRegions;
 			
 			import mx.collections.ArrayCollection;
 			import mx.collections.ArrayList;
@@ -39,6 +36,52 @@
 			public var trainTimes:Array;
 			
 			private var alertTrains:Array = [];
+			
+			private var currentPosition:Number = 10000;
+			private var hasMoved:Boolean = false;
+			
+			private function startMoving(event:MouseEvent):void
+			{
+				event.stopImmediatePropagation();
+				currentPosition = this.x;
+				hasMoved = false;
+				if (currentState == "times" && event.target != nsHitArea)
+				{
+					stage.addEventListener(MouseEvent.MOUSE_MOVE, moveTrainSchedule);
+					stage.addEventListener(MouseEvent.MOUSE_UP, changeStates);	
+				}
+			}
+			
+			protected function moveTrainSchedule(event:MouseEvent):void
+			{
+				event.stopImmediatePropagation();
+				if (event.stageX <= currentPosition)
+				{
+					this.x = event.stageX;
+					hasMoved = (hasMoved || this.x-currentPosition < -10);
+					(parentApplication as CaltrainTimes).grpStations.x = this.x-currentPosition;
+				}
+			}
+			
+			private function changeStates(event:Event = null):void
+			{
+				event.stopImmediatePropagation();
+				if (currentState == "times" && event.target != nsHitArea)
+				{
+					stage.removeEventListener(MouseEvent.MOUSE_MOVE, moveTrainSchedule);
+					stage.removeEventListener(MouseEvent.MOUSE_UP, changeStates);
+					
+					//trace("changeStates:" + this.x + " - " + currentPosition);
+					if (this.x < currentPosition-10 || !hasMoved)
+						currentState = "details";
+					else
+					{
+						this.x = currentPosition;
+						(parentApplication as CaltrainTimes).grpStations.x = 0;
+					}
+					//(parentApplication as CaltrainTimes).grpStations.x = 0;
+				}
+			}
 			
 			public function clearAlertTrains():void
 			{
@@ -144,7 +187,7 @@
 				nsBound.source = northbound;
 			}
 			
-			public function setStations(fromStation:StationVO, toStation:StationVO):void
+			public function setStations(fromStation:StationVO, toStation:StationVO, force:Boolean = false):void
 			{
 				btnDays.selected = CaltrainTimes.todaysServiceID == 2;
 				btnEnds.selected = !btnDays.selected;
@@ -155,7 +198,7 @@
 				lstTimes.alpha = 0;
 				createTrainTimes();
 				
-				if (currentState == "times")
+				if (currentState == "times" || force)
 					getTimes();
 			}
 			
@@ -342,6 +385,8 @@
 	<s:Group id="grpButtons"
 			  width="100%">
 		<s:BitmapImage id="nsBound" verticalCenter="0" />
+		<s:Button id="nsHitArea" height="{nsBound.height}" width="{nsBound.height}" alpha="0"
+							  click="(parentApplication as CaltrainTimes).swapStations();" verticalCenter="0" />
 		
 		<s:HGroup id="grpButtons2" horizontalCenter="0" gap="0" verticalCenter="0" 
 				  enabled.default="false"
@@ -411,7 +456,7 @@
 			<s:Label id="lbl2" text="Arrives" styleName="resultsHeader" textAlign="center" width="24%" filters="{headerDropShadow}" />
 			<s:Label id="lbl3" text="Duration" styleName="resultsHeader" textAlign="center" width="24%" filters="{headerDropShadow}" />
 			<s:Label id="lbl4" text="#" styleName="resultsHeader" textAlign="center" width="12%" filters="{headerDropShadow}" />
-			<s:Label text="Fare" styleName="resultsHeader" textAlign="center" width="16%" filters="{headerDropShadow}" />
+			<s:Label id="lbl5" text="Fare" styleName="resultsHeader" textAlign="center" width="16%" filters="{headerDropShadow}" />
 		</s:HGroup>
 	</s:Group>
 	

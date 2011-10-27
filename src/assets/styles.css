@@ -56,7 +56,8 @@ ree|SpinnerDataGroup
 	fontFamily: myHelveNeueBdCn;
 	advancedAntiAliasing : false;
 	embedAsCFF: true;
-	unicodeRange: U+0020-U+007F;
+	unicodeRange: U+0020-U+007F,
+		U+000a, U+0020-U+0021, U+002c-U+002f, U+00a1, U+00e1, U+00ed, U+00f3, U+00fa;
 }
 @font-face
 {
@@ -64,7 +65,8 @@ ree|SpinnerDataGroup
 	fontFamily: myHelveNeueBdCn2;
 	advancedAntiAliasing : false;
 	embedAsCFF: false;
-	unicodeRange: U+0020-U+007F;
+	unicodeRange: U+0020-U+007F,
+		U+000a, U+0020-U+0021, U+002c-U+002f, U+00a1, U+00e1, U+00ed, U+00f3, U+00fa;
 }
 
 @font-face
@@ -73,7 +75,8 @@ ree|SpinnerDataGroup
 	fontFamily: myHelveNeueLtCn;
 	advancedAntiAliasing : false;
 	embedAsCFF: true;
-	unicodeRange: U+0030-U+007F;
+	unicodeRange: U+0030-U+007F, U+0027,
+		U+000a, U+0020-U+0021, U+002c-U+002f, U+00a1, U+00e1, U+00ed, U+00f3, U+00fa;
 }
 
 
@@ -81,10 +84,34 @@ ree|SpinnerDataGroup
 {
 	src: url("/assets/fonts/HelveticaNeueLTStd-LtCn.otf");
 	fontFamily: myHelveNeueLtCn2;
-	advancedAntiAliasing : false;
+	advancedAntiAliasing: false;
 	embedAsCFF: false;
-	unicodeRange: U+0024-U+007F;
+	unicodeRange: U+0024-U+007F,
+		U+000a, U+0020-U+0021, U+002c-U+002f, U+00a1, U+00e1, U+00ed, U+00f3, U+00fa;
 }
+
+@font-face
+{
+	src: url("/assets/fonts/AdobeHeitiStd-Regular.otf");
+	fontFamily: myAdobeHeitiStd;
+	fontWeight: normal;
+	advancedAntiAliasing: false;
+	embedAsCFF: true;
+	unicodeRange: U+0024, U+003A, U+002E, U+0030-U+0039, U+000a, U+0020, U+0023, U+002d, U+0047, U+0050, U+0053, 
+		U+3002, U+4e00, U+4e0a-U+4e0b, U+4e0d, U+4e2d, U+4e4b, U+4e58, U+4ece, U+4ee5, U+4ef7, U+4f1a, U+4f4d, U+4f7f, U+51fa-U+51fb, U+5206, U+5217, U+5230, U+523b, U+524d, U+529f-U+52a1, U+5317, U+5348, U+5357, U+53d1, U+53d6, U+53eb, U+53f3, U+540e, U+542f, U+5468, U+56fe, U+5728, U+5730, U+591a, U+592a, U+5982, U+5b9a, U+5ba2, U+5bfb, U+5c0f, U+5dde, U+5e73, U+5e8f, U+5e94, U+5feb, U+60a8, U+6109, U+611f, U+6162, U+6216, U+627e, U+62e9, U+6301, U+6389, U+63d0, U+652f, U+65c5, U+65e5, U+65f6, U+662f, U+663e, U+66f4, U+6700, U+6709, U+670d, U+672b, U+679c, U+67e5, U+6807, U+68c0, U+6b22, U+706b, U+70b9, U+7136, U+7528, U+7684, U+76ee, U+793a, U+795d, U+7968, U+7a0b, U+7ad9, U+7ebf, U+7ec6, U+7f16, U+7f6e, U+80fd, U+8282, U+83b7, U+884c, U+8868, U+8981, U+89d2, U+8bbe, U+8bd5, U+8bdd, U+8bf7, U+8c22, U+8def, U+8f66, U+8f6c, U+8f91, U+8fbe, U+8fce, U+8fd1, U+9009, U+9014, U+949f, U+95f4, U+9e23, U+ff01, U+ff0c, U+ff1a;
+}
+
+@font-face
+{
+	src: url("/assets/fonts/AdobeHeitiStd-Regular.otf");
+	fontFamily: myAdobeHeitiStd2;
+	fontWeight: normal;
+	advancedAntiAliasing: false;
+	embedAsCFF: false;
+	unicodeRange: U+0024, U+003A, U+002E, U+0030-U+0039, U+000a, U+0020, U+0023, U+002d, U+0047, U+0050, U+0053, 
+		U+3002, U+4e00, U+4e0a-U+4e0b, U+4e0d, U+4e2d, U+4e4b, U+4e58, U+4ece, U+4ee5, U+4ef7, U+4f1a, U+4f4d, U+4f7f, U+51fa-U+51fb, U+5206, U+5217, U+5230, U+523b, U+524d, U+529f-U+52a1, U+5317, U+5348, U+5357, U+53d1, U+53d6, U+53eb, U+53f3, U+540e, U+542f, U+5468, U+56fe, U+5728, U+5730, U+591a, U+592a, U+5982, U+5b9a, U+5ba2, U+5bfb, U+5c0f, U+5dde, U+5e73, U+5e8f, U+5e94, U+5feb, U+60a8, U+6109, U+611f, U+6162, U+6216, U+627e, U+62e9, U+6301, U+6389, U+63d0, U+652f, U+65c5, U+65e5, U+65f6, U+662f, U+663e, U+66f4, U+6700, U+6709, U+670d, U+672b, U+679c, U+67e5, U+6807, U+68c0, U+6b22, U+706b, U+70b9, U+7136, U+7528, U+7684, U+76ee, U+793a, U+795d, U+7968, U+7a0b, U+7ad9, U+7ebf, U+7ec6, U+7f16, U+7f6e, U+80fd, U+8282, U+83b7, U+884c, U+8868, U+8981, U+89d2, U+8bbe, U+8bd5, U+8bdd, U+8bf7, U+8c22, U+8def, U+8f66, U+8f6c, U+8f91, U+8fbe, U+8fce, U+8fd1, U+9009, U+9014, U+949f, U+95f4, U+9e23, U+ff01, U+ff0c, U+ff1a;
+}
+
 @font-face
 {
 	src: url("/assets/fonts/HelveticaNeueLTStd-Roman.otf");
@@ -119,23 +146,27 @@ global
 	skinClass: ClassReference("com.renaun.caltrain.skins.BlackBoxSkin");
 }
 /* greyed out 4d4d4d */
-.text1
+.text1, .text1Chinese, .text1Spanish
 {
 	color: #c0c0c0;
 	font-size: 18;
 	font-family: myHelveNeueBdCn;
 }
-.text2
+.text2, .text2Spanish
 {
 	color: #ffffff;
 	font-size: 18;
 	font-family: myHelveNeueLtCn;
 }
+.text1Chinese, .text2Chinese { font-size: 16; font-family: myAdobeHeitiStd }
+.text1Spanish, .text2Spanish { font-size: 14; }
 
-.alertText2 { color: #ffffff; font-family: myHelveNeueLtCn; font-size: 14px; }
+.alertText2, .alertText2Chinese { color: #ffffff; font-family: myHelveNeueLtCn; font-size: 14px; }
 .alertText { color: #ffffff; font-family: myHelveNeueLtCn2; font-size: 14px; }
 .alertHeader {	color: #a10c11;	font-family: myHelveNeueBlkCn;	font-size: 14px; }
-
+.alertText2Button { color: #ffffff; font-family: myHelveNeueLtCn2; font-size: 14px;
+	skinClass: ClassReference("com.renaun.caltrain.skins.LanguageButtonSkin"); }
+.alertText2Chinese { font-family: myAdobeHeitiStd; }
 .weekText
 {
  	color: #ffffff;
@@ -143,19 +174,16 @@ global
  	font-family: myHelveBol;
 }
 
-.resultsQuick
+.resultsQuick, .results
 {
 	color: #ffffff;
 	font-size: 14;
 	font-family: myHelveNeueLtCn2;
 }
-.results
-{
-	color: #ffffff;
-	font-size: 14;
-	font-family: myHelveNeueLtCn2;
-	textAlign: center;
-}
+.results { textAlign: center; }
+
+.resultsChinese, .resultsQuickChinese {	font-size: 12; font-family: myAdobeHeitiStd2; }
+.resultsChinese { textAlign: center; }
 
 .resultsHeader
 {
@@ -164,14 +192,8 @@ global
 	font-family: myHelveNeueBdCn;
 }
 
-ct|StationBlackBox .text2Grey
-{
-	color: #c0c0c0;
-}
-ct|StationBlackBox .textDisabled
-{
-	color: #4d4d4d;
-}
+ct|StationBlackBox .text2Grey { color: #c0c0c0; }
+ct|StationBlackBox .textDisabled { color: #4d4d4d; }
 
 .stationText1
 {
@@ -185,23 +207,25 @@ ct|StationBlackBox .textDisabled
 	font-family: myHelveNeueBdCn2;
 }
 
-.editText
-{
-	font-size: 12;
-	font-family: myHelveNeueRoman;
-}
+.editText { font-size: 12; font-family: myHelveNeueRoman; }
+.editTextChinese { font-size: 12; font-family: myAdobeHeitiStd; }
 
 @media (application-dpi: 160)
 {
 	.headerText, .headerText2 { font-size: 36; paddingTop: 2; }
 	ct|StationBlackBox .text2, ct|StationBlackBox .text1 { font-size: 18; }
 	.editText { font-size: 12;paddingTop:2px }
+	.editTextChinese { font-size: 12;paddingTop:2px }
 	.weekText { font-size: 12; paddingLeft: 16; paddingRight: 16; }
 	.text1, .text2, .stationText1 { font-size: 18; paddingTop: 4; }
+	.text1Chinese, .text2Chinese { font-size: 16; paddingTop: 2; }
+	.text1Spanish, .text2Spanish { font-size: 14; paddingTop: 2; }
 	.stationText2 { font-size: 18; }
 	.resultsQuick { font-size: 14; paddingTop: 4; paddingLeft: 4; paddingRight: 24; }
-	.resultsHeader, .results { font-size: 14; paddingTop: 6; }
-	.alertText, .alertText2, .alertHeader { font-size: 14; }
+	.resultsQuickChinese { font-size: 12; paddingTop: 4; paddingLeft: 4; paddingRight: 24; }
+	.resultsChinese { font-size: 12; paddingTop: 6; }
+	.resultsHeader, .results, .resultsEmbed { font-size: 14; paddingTop: 6; }
+	.alertText, .alertText2, .alertHeader, .alertText2Button, .alertText2Chinese { font-size: 14; }
 }
 
 @media (application-dpi: 240)
@@ -209,12 +233,17 @@ ct|StationBlackBox .textDisabled
 	.headerText, .headerText2 { font-size: 54; paddingTop: 4; }
 	ct|StationBlackBox .text2, ct|StationBlackBox .text1 { font-size: 27; }
 	.editText { font-size: 16;paddingTop:3px }
+	.editTextChinese { font-size: 16;paddingTop:3px }
 	.weekText { font-size: 18; paddingLeft: 24; paddingRight: 24; }
 	.text1, .text2, .stationText1 { font-size: 27; paddingTop: 6; }
+	.text1Chinese, .text2Chinese { font-size: 24; paddingTop: 4; }
+	.text1Spanish, .text2Spanish { font-size: 21; paddingTop: 4; }
 	.stationText2 {	font-size: 27; }
 	.resultsQuick { font-size: 21; paddingTop: 6; paddingLeft: 6; paddingRight: 36; }
-	.resultsHeader, .results { font-size: 21; paddingTop: 8; }
-	.alertText, .alertText2, .alertHeader { font-size: 21; }
+	.resultsQuickChinese { font-size: 18; paddingTop: 6; paddingLeft: 6; paddingRight: 36; }
+	.resultsChinese { font-size: 18; paddingTop: 8; }
+	.resultsHeader, .results, .resultsEmbed { font-size: 21; paddingTop: 8; }
+	.alertText, .alertText2, .alertHeader, .alertText2Button, .alertText2Chinese { font-size: 21; }
 }
 
 @media (application-dpi: 320)
@@ -222,11 +251,16 @@ ct|StationBlackBox .textDisabled
 	.headerText, .headerText2 {	font-size: 72; paddingTop: 6; }
 	ct|StationBlackBox .text2, ct|StationBlackBox .text1 { font-size: 36; }
 	.editText { font-size: 24;paddingTop:5px }
+	.editTextChinese { font-size: 24;paddingTop:5px }
 	.weekText {	font-size: 24; paddingLeft: 32; paddingRight: 32; }
 	.text1, .text2, .stationText1 {	font-size: 36; paddingTop: 8; }
+	.text1Chinese, .text2Chinese { font-size: 32; paddingTop: 6; }
+	.text1Spanish, .text2Spanish { font-size: 28; paddingTop: 6; }
 	.stationText2 {	font-size: 36; }
 	.resultsQuick { font-size: 28; paddingTop: 8; paddingLeft: 8; paddingRight: 48; }
-	.resultsHeader, .results { font-size: 28; paddingTop: 10; }
-	.alertText, .alertText2, .alertHeader { font-size: 28; }
+	.resultsQuickChinese { font-size: 24; paddingTop: 8; paddingLeft: 8; paddingRight: 48; }
+	.resultsChinese { font-size: 24; paddingTop: 10; }
+	.resultsHeader, .results, .resultsEmbed { font-size: 28; paddingTop: 10; }
+	.alertText, .alertText2, .alertHeader, .alertText2Button, .alertText2Chinese { font-size: 28; }
 }
 
