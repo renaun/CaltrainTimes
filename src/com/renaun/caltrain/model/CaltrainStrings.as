@@ -74,6 +74,7 @@ public class CaltrainStrings
 	public static const LOCALE_ENGLISH:String = "en_US";
 	public static const LOCALE_CHINESE:String = "zh_CH";
 	public static const LOCALE_SPANISH:String = "es_ES";
+	public static const LOCALE_GERMAN:String = "de_DE";
 
 	
 }	
