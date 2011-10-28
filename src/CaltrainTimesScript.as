@@ -751,6 +751,23 @@ public function setLocaleStrings(locale:String, runtime:Boolean = false):void
 		grpInstructions.lblHelp6.styleName = "alertText2";
 		grpInstructions.lblFind.styleName = "text2Spanish";
 	}
+	else if (CaltrainStrings.currentLocale == CaltrainStrings.LOCALE_GERMAN)
+	{
+		grpFrom.lblPrefix.styleName = "text1German";
+		grpFrom.lblEdit.styleName = "editTextGerman";
+		grpFrom.lblStation.styleName = "text1German";
+		grpTo.lblPrefix.styleName = "text1German";
+		grpTo.lblEdit.styleName = "editText";
+		grpTo.lblStation.styleName = "text1German";
+		grpInstructions.lblTitle.styleName = "text1German";
+		grpInstructions.lblHelp1.styleName = "alertText2German";
+		grpInstructions.lblHelp2.styleName = "alertText2German";
+		grpInstructions.lblHelp3.styleName = "alertText2German";
+		grpInstructions.lblHelp4.styleName = "alertText2German";
+		grpInstructions.lblHelp5.styleName = "alertText2German";
+		grpInstructions.lblHelp6.styleName = "alertText2German";
+		grpInstructions.lblFind.styleName = "text2";
+	}
 	else
 	{
 		grpFrom.lblPrefix.styleName = "text1";
