@@ -1,0 +1,12 @@
+# Flash Builder stuff
+.actionScriptProperties
+.flexProperties
+.project
+.settings/
+bin-debug/
+
+# Windows stuff
+desktop.ini
+
+# Mac stuff
+.DS_Store
