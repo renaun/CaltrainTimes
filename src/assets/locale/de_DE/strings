@@ -1,0 +1,38 @@
+titlePart1=Caltrain
+titlePart2=Times
+weekday=Wochentag
+weekend=Wochenende
+edit=ÄNDERN
+fromStationPrefix=Von:
+toStationPrefix=Nach:
+selectStation=- Wähle Station -
+departs=Abfahrt
+arrives=Ankunft
+duration=Dauer
+trainNumber=Nr.
+
+#Note: Using space after "-" to cause a line break
+fare=Fahr- preis
+ 
+alertPrefix=Hinweis:
+gps.notsupported=Der Service zur Ermittlung des Standortes wird nicht unterstützt.
+gps.disabled=Bitte aktivieren Sie den Service zur Standordermittlung.
+gps.timeout=Die Standordermittlung daürt zu lange. Bitte überprüfen Sie Ihre GPS Einstellungen.
+gps.match={1} ist die  nächstliegende Station.
+trainAlerts.singular=Tweets gefunden für {1} Bahnverbindung.
+trainAlerts.plural=Tweets gefunden für {1} Bahnverbindungen.
+hours.single=h
+hours.plural=h
+minutes=min
+time.pm=pm
+time.am=am
+info.title=Willkommen zur Caltrain Times Anwendung
+info.help1=Um Ihren Fahrplan zu ermitteln, wählen Sie bitte den Start- und Endbahnof aus der Liste. Klicken Sie dann auf die Zeitenauflistung, um weitere Informationen zu erhalten.
+info.help2=Klicken Sie auf das obere rechte Icon, um die nächstliegende Station zu ermitteln.
+info.help3=Falls möglich werden Fahrgasthinweise für die Verbindung zwischen den ausgewählten Stationen angezeigt.
+info.help4=Klicken Sie auf das in Richtung Norden oder Süden Icon, um die Fahrtrichtung der ausgewählten Verbindung zu ändern.
+info.help5=Vielen Dank, dass Sie Caltrain Times nutzen.
+info.help6=Gute Fahrt!
+info.button=LOS GEHT'S
+next.southbound=Nächste Station in Richtung Süden {1}{2}
+next.northbound=Nächste Station in Richtung Norden {1}{2}

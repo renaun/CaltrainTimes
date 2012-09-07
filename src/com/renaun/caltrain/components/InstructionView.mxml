@@ -51,12 +51,14 @@
 		</s:layout>
 	
 	<s:HGroup id="lblLanguage" width="100%" verticalAlign="middle">
-		<s:Button label="中文" styleName="alertText2Button" color="0xc0c0c0" width="33%"
+		<s:Button label="中文" styleName="alertText2Button" color="0xc0c0c0" width="20%"
 				  click="(parentApplication as CaltrainTimes).setLocaleStrings(CaltrainStrings.LOCALE_CHINESE, true)" />
-		<s:Button label="English" styleName="alertText2Button" color="0xc0c0c0" width="34%"
+		<s:Button label="English" styleName="alertText2Button" color="0xc0c0c0" width="26%"
 				  click="(parentApplication as CaltrainTimes).setLocaleStrings(CaltrainStrings.LOCALE_ENGLISH, true)" />
-		<s:Button label="español" styleName="alertText2Button" color="0xc0c0c0" width="33%"
+		<s:Button label="español" styleName="alertText2Button" color="0xc0c0c0" width="27%"
 				  click="(parentApplication as CaltrainTimes).setLocaleStrings(CaltrainStrings.LOCALE_SPANISH, true)" />
+		<s:Button label="Deutsch" styleName="alertText2Button" color="0xc0c0c0" width="27%"
+				  click="(parentApplication as CaltrainTimes).setLocaleStrings(CaltrainStrings.LOCALE_GERMAN, true)" />
 	</s:HGroup>
 	
 	<s:Label id="lblTitle" text="Welcome to the Caltrain Times App" styleName="text1" color="0xffffff"/>
