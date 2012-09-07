@@ -23,7 +23,7 @@ package com.renaun.caltrain.components
 			super(); 
 		} 
 		
-		override mx_internal function getImageClass(dpi:Number, aspectRatio:String):Class 
+		override mx_internal function getImageClass(aspectRatio:String, dpi:Number, resolution:Number):Class 
 		{ 
 			if (dpi == DPIClassification.DPI_160)
 			{

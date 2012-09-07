@@ -212,7 +212,13 @@
 				var argServiceID:int = CaltrainTimes.todaysServiceID;
 				if (serviceID > -1)
 					argServiceID = serviceID;
-				var sql:String = "SELECT stop_times.trip_id, trips.route_id FROM stop_times, trips WHERE trips.service_id=" + argServiceID +
+				var serviceSQL:String = "trips.service_id=" + argServiceID;
+				if (argServiceID == 3 && CaltrainTimes.isSaturday)
+				{
+					trace("HERE");
+					serviceSQL = "(trips.service_id=3 OR trips.service_id=1)";
+				}
+				var sql:String = "SELECT stop_times.trip_id, trips.route_id FROM stop_times, trips WHERE " + serviceSQL +
 					" AND trips.trip_id=stop_times.trip_id AND trips.direction=" + direction + 
 					" AND (stop_times.stop_id="+fromStopID+" OR stop_times.stop_id="+toStopID+")" +
 					" GROUP BY stop_times.trip_id HAVING COUNT(stop_times.trip_id)>1";

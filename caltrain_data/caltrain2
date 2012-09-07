@@ -1,0 +1,30 @@
+CREATE TABLE routes (route_id INTEGER PRIMARY KEY AUTOINCREMENT, short_name TEXT);
+
+INSERT INTO routes (route_id,short_name) VALUES (1,'Bullet');
+INSERT INTO routes (route_id,short_name) VALUES (2,'Limited');
+INSERT INTO routes (route_id,short_name) VALUES (3,'Local');
+
+
+CREATE TABLE services (service_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT);
+
+INSERT INTO services (service_id,name) VALUES (1,'ST_20110701 saturday');
+INSERT INTO services (service_id,name) VALUES (2,'WD_20110701 weekday');
+INSERT INTO services (service_id,name) VALUES (3,'WE_20110701 weekend');
+
+
+CREATE TABLE stop_times (stop_time_id INTEGER PRIMARY KEY AUTOINCREMENT, trip_id INTEGER, arrival_time INTEGER NOT NULL DEFAULT 0, departure_time INTEGER NOT NULL DEFAULT 0, stop_id INTEGER);
+
+
+
+CREATE TABLE "stops" (stop_id INTEGER PRIMARY KEY AUTOINCREMENT);
+
+
+
+CREATE TABLE trips (trip_id INTEGER PRIMARY KEY, route_id INTEGER NOT NULL DEFAULT 1, service_id INTEGER NOT NULL DEFAULT 1, trip_headsign TEXT, direction INTEGER NOT NULL DEFAULT 0);
+
+INSERT INTO trips (trip_id,route_id,service_id,trip_headsign,direction) VALUES (101,3,2,'San Francisco (Train 101)',0);
+INSERT INTO trips (trip_id,route_id,service_id,trip_headsign,direction) VALUES (102,3,2,'San Jose(Train 102)',1);
+INSERT INTO trips (trip_id,route_id,service_id,trip_headsign,direction) VALUES (103,3,2,'San Francisco (Train 103)',0);
+INSERT INTO trips (trip_id,route_id,service_id,trip_headsign,direction) VALUES (135,3,2,'San Francisco (Train 135)',0);
+
+

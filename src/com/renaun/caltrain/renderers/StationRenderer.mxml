@@ -34,10 +34,14 @@
 					// get Latest times
 					var c:uint = 0;
 					var d:Date = new Date();
+					CaltrainTimes.isSaturday = d.getDay() == 6;
 					var cTime:int = (d.getHours() * 60) + d.getMinutes();
 					var stopID:int = (data as StationVO).stopID;
-					var serviceID:int = CaltrainTimes.todaysServiceID;
-					var sql:String = "select stop_times.arrival_time, trips.route_id from stop_times, trips where stop_id="+stopID+" AND stop_times.trip_id=trips.trip_id AND trips.service_id="+serviceID+" AND arrival_time>"+cTime+" AND trips.direction=0 order by arrival_time limit 1";
+					var serviceID:String = "trips.service_id="+CaltrainTimes.todaysServiceID;
+					if (CaltrainTimes.todaysServiceID == 3 && CaltrainTimes.isSaturday)
+						serviceID += "(trips.service_id=1 OR trips.service_id=3)";
+					var sql:String = "select stop_times.arrival_time, trips.route_id from stop_times, trips where stop_id="+stopID+" AND stop_times.trip_id=trips.trip_id AND "+serviceID+" AND arrival_time>"+cTime+" AND trips.direction=0 order by arrival_time limit 1";
+					
 					var results:Array = FlexGlobals.topLevelApplication.processSQL(sql);
 					var routeID:int = 0;
 					if (results.length > 0)

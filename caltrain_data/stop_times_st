@@ -1,0 +1,1 @@
+CREATE TABLE stop_times (stop_time_id INTEGER PRIMARY KEY AUTOINCREMENT, trip_id INTEGER, arrival_time INTEGER NOT NULL DEFAULT 0, departure_time INTEGER NOT NULL DEFAULT 0, stop_id INTEGER)

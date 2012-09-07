@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark">
+	<s:layout>
+		<s:VerticalLayout />
+	</s:layout>
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.utils.ObjectUtil;
+
+			private var dbFile:File;
+
+			private var sqlConn:SQLConnection;
+
+			private var sqlStatement:SQLStatement;
+			
+			private static const DATA_FOLDER:String = "caltrain_data2012";
+			
+			private static const DB_NAME:String = "caltrain2012.db";
+			
+			protected function sql_clickHandler(event:MouseEvent):void
+			{
+				output.text = "";
+				dbFile = File.applicationStorageDirectory.resolvePath(DB_NAME);
+				sqlConn = new SQLConnection();
+				sqlConn.open(dbFile);
+				
+				sqlStatement = new SQLStatement();
+				sqlStatement.sqlConnection = sqlConn;
+				sqlStatement.text = txtSQL.text;
+				try
+				{
+					sqlStatement.execute();
+				} catch (error:SQLError) {
+					out("error:" + error.details);
+					return;
+				}
+				var r:Array = sqlStatement.getResult().data;
+				if (!r)
+				{
+					out("results are null")
+					return;
+				}
+				for (var j:int = 0; j < r.length; j++) 
+				{
+					out(ObjectUtil.toString(r[j]));
+				}
+			}
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				output.text = "";
+				dbFile = File.applicationStorageDirectory.resolvePath(DB_NAME);
+				sqlConn = new SQLConnection();
+				sqlConn.open(dbFile);
+				if (chkstops.selected)
+				{
+					out("PROCESSING stops!");
+					parseFile("stops.txt", "stops");
+				}
+				if (chkservices.selected)
+				{
+					out("PROCESSING services!");
+					parseFile("calendar.txt", "services");
+				}
+				if (chkroutes.selected)
+				{
+					out("PROCESSING routes!");
+					parseFile("routes.txt", "routes");
+				}
+				if (chkstop_times.selected)
+				{
+					out("PROCESSING stop_times!");
+					parseFile("stop_times.txt", "stop_times");
+				}
+				if (chktrips.selected)
+				{
+					out("PROCESSING trips!");
+					parseFile("trips.txt", "trips");
+				}
+				if (chkfare_attributes.selected)
+				{
+					out("PROCESSING fare_attributes!");
+					parseFile("fare_attributes.txt", "fare_attributes");
+				}
+				if (chkfare_rules.selected)
+				{
+					out("PROCESSING fare_rules!");
+					parseFile("fare_rules.txt", "fare_rules");
+				}
+				if (chkcalendar_dates.selected)
+				{
+					out("PROCESSING calendar_dates!");
+					parseFile("calendar_dates.txt", "calendar_dates");
+				}
+			}
+			
+			protected function parseFile(fileName:String, tableName:String):void
+			{
+				
+				var file:File = new File("/Users/renaun/Documents/workspaces/Customers/CaltrainTimesSupport/"+DATA_FOLDER+"/" + fileName);
+				var stream:FileStream = new FileStream();
+				stream.open(file, FileMode.READ);
+				
+				sqlStatement = new SQLStatement();
+				sqlStatement.sqlConnection = sqlConn;
+				if (fileName == "stops.txt")
+				{
+					sqlStatement.text = "DROP TABLE stops";
+					sqlStatement.execute();
+					sqlStatement.text = "CREATE TABLE stops (stop_id INTEGER PRIMARY KEY AUTOINCREMENT, zone_id INTEGER NOT NULL DEFAULT 0, stop_lat REAL NOT NULL DEFAULT 0, stop_lon REAL NOT NULL DEFAULT 0, name TEXT NOT NULL DEFAULT 0, stop_description TEXT NOT NULL DEFAULT 0)";
+					sqlStatement.execute();
+				}
+				else if (fileName == "stop_times.txt")
+				{
+					sqlStatement.text = "DROP TABLE stop_times";
+					sqlStatement.execute();
+					sqlStatement.text = "CREATE TABLE stop_times (stop_time_id INTEGER PRIMARY KEY AUTOINCREMENT, trip_id INTEGER, arrival_time INTEGER NOT NULL DEFAULT 0, sequence INTEGER NOT NULL DEFAULT 0, stop_id INTEGER)";
+					sqlStatement.execute();
+				}
+				else if (fileName == "routes.txt")
+				{
+					sqlStatement.text = "DROP TABLE routes";
+					sqlStatement.execute();
+					sqlStatement.text = "CREATE TABLE routes (route_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)";
+					sqlStatement.execute();
+				}
+				else if (fileName == "calendar.txt")
+				{
+					sqlStatement.text = "DROP TABLE services";
+					sqlStatement.execute();
+					sqlStatement.text = "CREATE TABLE services (service_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)";
+					sqlStatement.execute();
+				}
+				else if (fileName == "trips.txt")
+				{
+					sqlStatement.text = "DROP TABLE trips";
+					sqlStatement.execute();
+					sqlStatement.text = "CREATE TABLE trips (trip_id INTEGER PRIMARY KEY, route_id INTEGER NOT NULL DEFAULT 1, service_id INTEGER NOT NULL DEFAULT 1, trip_headsign TEXT, direction INTEGER NOT NULL DEFAULT 0)";
+					sqlStatement.execute();	
+				}
+				else if (fileName == "fare_attributes.txt")
+				{
+					try	{
+					sqlStatement.text = "DROP TABLE fare_attributes";
+					sqlStatement.execute();
+					} catch(error:Error) {}
+					sqlStatement.text = "CREATE TABLE fare_attributes (fare_attribute_id INTEGER PRIMARY KEY, name TEXT, price REAL NOT NULL DEFAULT 0.0)";
+					sqlStatement.execute();	
+				}
+				else if (fileName == "fare_rules.txt")
+				{
+					try	{
+					sqlStatement.text = "DROP TABLE fare_rules";
+					sqlStatement.execute();
+					} catch(error:Error) {}
+					sqlStatement.text = "CREATE TABLE fare_rules (fare_rule_id INTEGER PRIMARY KEY, fare_attribute_id INTEGER NOT NULL DEFAULT 0, route_id INTEGER NOT NULL DEFAULT 0, origin_id INTEGER NOT NULL DEFAULT 0, destination_id INTEGER NOT NULL DEFAULT 0)";
+					sqlStatement.execute();	
+				}
+				else if (fileName == "calendar_dates.txt")
+				{
+					try	{
+						sqlStatement.text = "DROP TABLE calendar_dates";
+						sqlStatement.execute();
+					} catch(error:Error) {}
+					sqlStatement.text = "CREATE TABLE calendar_dates (calendar_date_id INTEGER PRIMARY KEY, service_id INTEGER NOT NULL DEFAULT 0, service_date INTEGER NOT NULL DEFAULT 0, exception_type INTEGER NOT NULL DEFAULT 0)";
+					sqlStatement.execute();	
+				}
+				
+				var bytes:String = stream.readUTFBytes(stream.bytesAvailable);
+				var lines:Array = bytes.split("\n");
+				var data:Array;
+				sqlConn.begin();
+				for (var i:int = 1; i < lines.length; i++) 
+				{
+					var newLine:String = (lines[i] as String);
+					newLine = newLine.split("\"").join("");
+					trace("newLine: "+ newLine);
+					data = newLine.split(",");
+					
+					if (data.length <= 1)
+						continue;
+					if (fileName == "stop_times.txt")
+					{
+						/*"stop_times (stop_time_id INTEGER, 
+										trip_id INTEGER, 
+										arrival_time INTEGER NOT NULL DEFAULT 0, 
+										sequence INTEGER NOT NULL DEFAULT 0, 
+										stop_id INTEGER)";
+						*/
+						//trace(data[0] + " - " + data[0].split("_")[0]);
+						var date:String = data[1];
+						var parts:Array = date.split(":")
+						//trace(data[1] + " - " + (parts[0]*60 + parts[1]));
+						//trace(data[3]);// stop
+						var stopName:String = (data[3] as String).substring(0, (data[3] as String).length-9);
+						sqlStatement = new SQLStatement();
+						sqlStatement.sqlConnection = sqlConn;
+						sqlStatement.text = "SELECT stop_id FROM stops WHERE name='" + stopName + "'";
+						sqlStatement.execute();
+						var stopID:int = sqlStatement.getResult().data[0].stop_id;
+						//trace("stopID: " + sqlStatement.getResult().data[0].stop_id);
+						//trace("sequence: " + data[4]);
+							 
+						sqlStatement.text = "INSERT INTO stop_times (trip_id,arrival_time, stop_id, sequence) values (@trip_id, @arrival_time, @stop_id, @sequence)";
+						sqlStatement.parameters["@trip_id"] = data[0].split("_")[0];
+						sqlStatement.parameters["@arrival_time"] = (int(parts[0]*60) + int(parts[1]));
+						sqlStatement.parameters["@stop_id"] = stopID;
+						sqlStatement.parameters["@sequence"] = data[4];
+						sqlStatement.execute();
+					}
+					else if (fileName == "stops.txt")
+					{
+						sqlStatement.text = "INSERT INTO stops (zone_id,stop_lat, stop_lon, name, stop_description) values (@zone_id, @stop_lat, @stop_lon, @name, @desc)";
+						sqlStatement.parameters["@zone_id"] = data[6];
+						sqlStatement.parameters["@stop_lat"] = data[4];
+						sqlStatement.parameters["@stop_lon"] = data[5];
+						sqlStatement.parameters["@name"] = (data[1] as String).substring(0, (data[1] as String).length-9);
+						sqlStatement.parameters["@desc"] = data[2];
+						sqlStatement.execute();
+					}
+					else if (fileName == "calendar.txt")
+					{
+						sqlStatement.text = "INSERT INTO services (name) values (@name)";
+						sqlStatement.parameters["@name"] = data[0];
+						sqlStatement.execute();
+					}
+					else if (fileName == "routes.txt")
+					{
+						sqlStatement.text = "INSERT INTO routes (name) values (@name)";
+						sqlStatement.parameters["@name"] = data[0];
+						sqlStatement.execute();
+					}
+					else if (fileName == "fare_attributes.txt")
+					{
+						
+						sqlStatement.text = "INSERT INTO fare_attributes (name, price) values (@name, @price)";
+						sqlStatement.parameters["@name"] = data[0];
+						sqlStatement.parameters["@price"] = data[1];
+						sqlStatement.execute();	
+					}
+					else if (fileName == "fare_rules.txt")
+					{
+						sqlStatement = new SQLStatement();
+						sqlStatement.sqlConnection = sqlConn;
+						sqlStatement.text = "SELECT route_id FROM routes WHERE name='" + data[1] + "'";
+						sqlStatement.execute();
+						var routeID:int = sqlStatement.getResult().data[0].route_id;
+						
+						sqlStatement.text = "SELECT fare_attribute_id FROM fare_attributes WHERE name='" + data[0] + "'";
+						sqlStatement.execute();
+						var fareID:int = sqlStatement.getResult().data[0].fare_attribute_id;
+						
+						sqlStatement.text = "INSERT INTO fare_rules (fare_attribute_id, route_id, origin_id, destination_id) values (@fare_attribute_id, @route_id, @origin_id, @destination_id)";
+						sqlStatement.parameters["@route_id"] = routeID;
+						sqlStatement.parameters["@fare_attribute_id"] = fareID;
+						sqlStatement.parameters["@origin_id"] = data[2];
+						sqlStatement.parameters["@destination_id"] = data[3];
+						sqlStatement.execute();	
+					}
+					else if (fileName == "trips.txt")
+					{
+						/*"trips (trip_id INTEGER, 
+						route_id INTEGER, 
+						service_id INTEGER, 
+						trip_headsign TEXT, 
+						direction INTEGER
+						*/
+						//trace(data[0] + " - " + data[0].split("_")[0]);
+						
+						sqlStatement = new SQLStatement();
+						sqlStatement.sqlConnection = sqlConn;
+						sqlStatement.text = "SELECT route_id FROM routes WHERE name='" + data[1] + "'";
+						sqlStatement.execute();
+						var routeID2:int = sqlStatement.getResult().data[0].route_id;
+						//trace(data[1] + " - " + (parts[0]*60 + parts[1]));
+						sqlStatement.text = "SELECT service_id FROM services WHERE name='" + data[2] + "'";
+						sqlStatement.execute();
+						var serviceID:int = sqlStatement.getResult().data[0].service_id;
+						//trace("stopID: " + sqlStatement.getResult().data[0].stop_id);
+						//trace("sequence: " + data[4]);
+						
+						sqlStatement.text = "INSERT INTO trips (trip_id,route_id, service_id, trip_headsign, direction) values (@trip_id, @route_id, @service_id, @trip_headsign, @direction)";
+						sqlStatement.parameters["@trip_id"] = data[0].split("_")[0];
+						sqlStatement.parameters["@route_id"] = routeID2;
+						sqlStatement.parameters["@service_id"] = serviceID;
+						sqlStatement.parameters["@trip_headsign"] = data[3];
+						sqlStatement.parameters["@direction"] = data[4];
+						sqlStatement.execute();
+					}
+					else if (fileName == "calendar_dates.txt")
+					{
+						sqlStatement = new SQLStatement();
+						sqlStatement.sqlConnection = sqlConn;						
+						sqlStatement.text = "SELECT service_id FROM services WHERE name='" + data[0] + "'";
+						sqlStatement.execute();
+						var serviceID3:int = sqlStatement.getResult().data[0].service_id;
+						
+						//trace(serviceID3 + " - " + data[1] + " - " + data[2]);
+						
+						sqlStatement.text = "INSERT INTO calendar_dates (service_id, service_date, exception_type) values (@service_id, @service_date, @exception_type)";
+						sqlStatement.parameters["@service_id"] = serviceID3;
+						sqlStatement.parameters["@service_date"] = data[1];
+						sqlStatement.parameters["@exception_type"] = int(data[2]);
+						sqlStatement.execute();	
+					}
+				}
+				sqlConn.commit();
+				
+				sqlStatement = new SQLStatement();
+				sqlStatement.sqlConnection = sqlConn;
+				sqlStatement.text = "SELECT * FROM " + tableName;
+				sqlStatement.execute();
+				var r:Array = sqlStatement.getResult().data;
+				for (var j:int = 0; j < r.length; j++) 
+				{
+					out(ObjectUtil.toString(r[j]));
+				}
+				
+				out(lines.length + "");				
+			}
+			
+			private function out(msg:String):void
+			{
+				output.text += msg + "\n";
+			}
+		]]>
+	</fx:Script>
+	
+	<s:CheckBox id="chkstops" label="stops" />
+	<s:CheckBox id="chkservices" label="services" />
+	<s:CheckBox id="chkroutes" label="routes" />
+	<s:CheckBox id="chkstop_times" label="stop_times" />
+	<s:CheckBox id="chktrips" label="trips" />
+	<s:CheckBox id="chkfare_attributes" label="fare_attributes" />
+	<s:CheckBox id="chkfare_rules" label="fare_rules" />
+	<s:CheckBox id="chkcalendar_dates" label="calendar_dates" />
+	<s:TextInput id="txtSQL" width="100%" />
+	<s:HGroup width="100%">
+		<s:Button label="Create Database" click="button1_clickHandler(event)" />
+		<s:Button label="SQL Call" click="sql_clickHandler(event)" />
+	</s:HGroup>
+	<s:TextArea id="output" width="100%" height="100%" />
+</s:Application>

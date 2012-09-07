@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<application xmlns="http://ns.adobe.com/air/application/2.6">
+<application xmlns="http://ns.adobe.com/air/application/3.1">
 
 	<id>com.renaun.CaltrainTimes</id>
 	<filename>CaltrainTimes</filename>
 	<name>Caltrain Times</name>
-	<versionNumber>1.1.0</versionNumber>
+	<versionNumber>1.1.1</versionNumber>
 	<description>Caltrain Times provides train times between the Caltrain stations.</description>
 	<initialWindow>
 		<content>[This value will be overwritten by Flash Builder in the output app.xml]</content>
@@ -25,6 +25,7 @@
 	</icon>
 
 	<android>
+		 <colorDepth>16bit</colorDepth> 
         <manifestAdditions><![CDATA[
 			<manifest android:installLocation="auto">
 			    <uses-permission android:name="android.permission.INTERNET"/>

@@ -174,6 +174,7 @@ private var twitterUtil:CaltrainTwitterUtil;
  * 	3 = Weekend
  */
 public static var todaysServiceID:int = 2;
+public static var isSaturday:Boolean = false;
 
 /**
  * 	Things to do at startup of application (not called when apps comes activate
@@ -216,9 +217,9 @@ protected function init():void
 	try
 	{
 		dbFile = File.applicationStorageDirectory.resolvePath("caltrain.db");
-		if (!dbFile.exists)
+		if (!dbFile.exists || (dbFile.creationDate as Date).fullYear < 2012)
 		{
-			File.applicationDirectory.resolvePath("caltrain.db").copyTo(dbFile);
+			File.applicationDirectory.resolvePath("caltrain.db").copyTo(dbFile, true);
 			this.grpInstructions.visible = true;
 		}
 		sqlConn = new SQLConnection();
@@ -241,8 +242,10 @@ protected function init():void
 			src.push(s);
 		}
 		var d:Date = new Date();
+		CaltrainTimes.isSaturday = d.getDay() == 6;
 		if (d.getDay() == 0 || d.getDay() == 6)
 			CaltrainTimes.todaysServiceID = 3;
+		/* 2012 Removed for 2012 since there is no exceptions yet
 		else
 		{
 			var todaysDate:String = d.getFullYear()+"";
@@ -259,6 +262,7 @@ protected function init():void
 					CaltrainTimes.todaysServiceID = sID;
 			}
 		}
+		*/
 	}
 	catch (sqlError:SQLError)
 	{
